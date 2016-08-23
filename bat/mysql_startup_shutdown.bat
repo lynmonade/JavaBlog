@@ -1,3 +1,5 @@
+rem 必须在管理员权限下运行
+
 @echo off
 for /f "skip=3 tokens=4" %%i in ('sc query MySQL56') do set "zt=%%i" &goto :next
 

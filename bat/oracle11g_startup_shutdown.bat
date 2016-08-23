@@ -1,3 +1,5 @@
+rem 必须在管理员权限下运行
+
 @ECHO OFF
 for /f "skip=3 tokens=4" %%i in ('sc query OracleServiceORCL') do set "zt=%%i" &goto :next
 :next          
