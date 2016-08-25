@@ -106,4 +106,4 @@ public class IndexController extends Controller {
 </html>
 ```
 
-最后，启动tomcat，并访问地址：http://localhost:8080/jfreemarker/test。界面上就会西那是the value is lyn。
+最后，启动tomcat，并访问地址：`http://localhost:8080/jfreemarker/test`。界面上就会显示the value is lyn。
