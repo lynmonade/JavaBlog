@@ -7,14 +7,17 @@
 假设要把project下载到`D:\workspace\`目录下。首先进到workspace文件夹，然后右键，选择git clone。或者直接在git bash下输入下列命令。完成后，就会在得到目录:`D:workspace\JavaBlog\`
 
 ```java
-git clone http://git.oschina.net/iSingular/JavaBlog
+git clone https://github.com/lynmonade/JavaBlog.git
 
 --指定新的文件夹名字RenameProject
-git clone http://git.oschina.net/iSingular/JavaBlog RenameProject
+git clone https://github.com/lynmonade/JavaBlog.git RenameProject
 ```
 
 #忽略
 ```
 --忽略test文件夹以及其中的文件
 /test
+
+--忽略特定文件
+file.iml
 ```
