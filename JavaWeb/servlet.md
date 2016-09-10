@@ -422,6 +422,8 @@ getWriter方法返回PrintWriter对象，专门用于输出内容全为文本字
 ###输出缓冲区
 servlet程序输出的HTTP消息的响应正文不是直接发送到客户端，而是首先被写入到了servlet引擎提供的一个输出缓冲区中，这个缓冲区就像一个临时的蓄水池，直接输出缓冲区被填满或者servlet程序已经写入了所有的响应内容，缓冲区中的内容才会被servlet引擎发送到客户端。使用输出缓冲区后，servlet引擎就可以将响应状态行、各响应头和响应正文严格按照HTTP消息的位置顺序进行调整后再输出到客户端，特别是可以自动对Content-Length头字段进行设置和调整。如果在提交响应到客户端时，输出缓冲区中已经装入了所有的响应内容，servlet引擎将计算响应正文部分的大小并自动设置content-length头字段。如果在提交响应到客户端时，输出缓冲区中装入的内容只是全部响应内容的一部分，那么servlet引擎将无法再计算content-length头字段的值，它将使用HTTP1.1的chunked编码方式（通过设置Transfer-Encoding头字段来指定）传输响应内容，这样就不用设置content-length头字段了。
 
+[HTTP chunked编码数据流解析算法](http://my.oschina.net/ososchina/blog/666761)
+
 ###输出缓冲区的相关方法
 ####setBufferSize方法
 用于设置期望的输出缓冲区大小。servlet引擎实际使用的值不一定等于该值，但不会小于该值。
@@ -437,6 +439,11 @@ servlet程序输出的HTTP消息的响应正文不是直接发送到客户端，
 
 ####isCommited方法
 判断是否已经提交了部分响应内容到客户端，如果已经提交了，则返回true，否则返回false。
+
+###简单的文件下载
+
+
+
 
 
 
