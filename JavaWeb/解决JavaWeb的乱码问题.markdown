@@ -109,14 +109,21 @@ request.setCharacterEncoding()用于设置使用哪种编码格式对提交的�
 ## 经验小结
 * 安装完MyEclipse后，设置项目和文件的编码方式为UTF-8，[设置方法]()
 * 修改tomcat配置文件：%TOMCAT_HOME%/conf/server.xml，把编码格式设置为UTF-8：`<Connector port="8080" protocol="HTTP/1.1" URIEncoding="UTF-8"/>`。
-* 像后端传递参数时，最好手动对URL进行URLEncode，可以指定使用UTF-8进行编码。而不是依赖于浏览器对URL的自动编码。
+* 像后端传递参数时，最好手动对URL进行URLEncode，指定使用UTF-8进行编码。而不是依赖于浏览器对URL的自动编码。
 * 编写HTML、JSP页面时，显式地设置`meta`、`pageEncoding`为UTF-8。
 
 
 
 # Reference
-1. [浏览器是如何确定html文件编码的？](http://blog.csdn.net/cjdx123456/article/details/31807775)
-2. [全面使用 UTF-8](http://disksing.com/utf8everywhere)
-3. [「带 BOM 的 UTF-8」和「无 BOM 的 UTF-8」有什么区别？网页代码一般使用哪个？](https://www.zhihu.com/question/20167122)
-4. [UTF-16与UCS-2的区别](http://demon.tw/programming/utf-16-ucs-2.html)
+* [字符集与编码](https://my.oschina.net/goldenshaw/blog?catalog=536953)
+* [浏览器是如何确定html文件编码的？](http://blog.csdn.net/cjdx123456/article/details/31807775)
+* [浏览器URL编码](http://www.cnblogs.com/haitao-fan/p/3399018.html)
+* [全面使用 UTF-8](http://disksing.com/utf8everywhere)
+* [UTF-16与UCS-2的区别](http://demon.tw/programming/utf-16-ucs-2.html)
+* [为什么有的代码要用 base64 进行编码？](https://segmentfault.com/q/1010000000801988)
+* [Base64编码原理与应用
+](http://blog.xiayf.cn/2016/01/24/base64-encoding/)
+* [为什么要使用base64编码，有哪些情景需求？](https://www.zhihu.com/question/36306744/answer/71626823)
+* [&#x开头的是什么编码呢，知乎的回答](https://www.zhihu.com/question/21390312)
+* [「带 BOM 的 UTF-8」和「无 BOM 的 UTF-8」有什么区别？网页代码一般使用哪个？](https://www.zhihu.com/question/20167122)
 
