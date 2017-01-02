@@ -830,6 +830,43 @@ GET方式传递参数时，参数拼接在请求行的URL地址后面。而POST�
 在HTTP消息中，也可以使用一些在HTTP1.1正式规范里没有定义的头字段，这些头字段统称为自定义的HTTP头或者扩展头，它们通常被当做是一种实体头处理。现在流行的浏览器实际上都支持Cookie、Set-Cookie、Refresh和Content-Disposition等几个常用的扩展头字段。
 
 
+# 第七章 回话与状态管理
+
+## Cookie常用方法
+
+### setMaxAge()
+`setMaxAge(0);`表示通知浏览器立即删除该cookie。
+
+`setMaxAge(n); //n>0`表示通知浏览器，把cookie保存到硬盘上，即使浏览器关闭了，硬盘上的cookie也不会消失。只有当n秒后，cookie才会被自动删除。
+
+`setMaxAge(n); //n<0`与不调用setMaxAge()的效果是一样的。此时的cookie保存在浏览器进程内存中。当关闭浏览器时，自动删除cookie。
+
+## 实验
+在IE中第一次访问CookieServlet1，请求头中没有cookie头字段。浏览器只是把cookie放到response中。响应结束后，浏览器进程内存中将含有cookie。
+
+不要关闭浏览器，在IE中第二次访问CookieServlet1，请求头中包含所有cookie头字段的信息。包括写入硬盘的cookie和缓存在浏览器中的cookie。
+
+不要关闭浏览器，在IE中新建回话，然后访问CookieServlet1。请求头中只包含写入硬盘的cookie，不包含上一步缓存中的cookie。因为IE认为，IE浏览器中不同的会话可以共享硬盘中的持久cookie，但不能共享浏览器进程内存中不同会话的cookie。
+
+自己尝试的结果，保存在硬盘中的cookie，是没法在不同的浏览器中共享的。只能在IE中的不同会话中共享。所以，IE是特别奇葩的。
+
+子目录可以继承父目录的cookie，但父目录的cookie无法看到子目录特有的cookie。其实就像父类与子类的关系一样。
+
+在同一级别目录下，在不同的servlet中设置cookie，对于同一浏览器来说，是可以相互覆盖的。
+
+在IE中禁用cookie后，服务端依然会用response返回cookie，但浏览器不会再用request发送cookie。但如果你使用localhost/127.0.0.1测试的话，浏览器还是会发送cookie。也就是说，禁用cookie仅对访问外部服务器有效。如果服务器和浏览器在同一台机子上，则禁用cookie无效。
+
+
+## 实验 利用cookie实现session跟踪
+浏览器第一次发送请求时，浏览器先检查自身的缓存或者硬盘上是否保存有这个web应用程序下的JSEESSIONID，如果没有，则第一次请求中不传JSESSIONID。如果有，则把JSESSIONID放到请求头上，一起发送给web应用程序。
+
+web应用程序调用getSeesion，先判断这个JSESSIONID是否存在，如果不存在（比如过期了），则创建一个新sessionID，并自动放到cookie中，然后放到响应头中一起返回给浏览器。这时，浏览器会把接收到的最新的sessionID保存到内存中。
+
+浏览器第二次发送请求时，浏览器会自动把内存中的JSESSIONID提取出来，放到请求头中。web应用程序接收到请求后，调用getSession，此时会发现web应用程序中的sessionID与传过来的JSESSIONID是一致的，就可知道这是来自同一会话的请求。所以此次就不在请求头中返回sessionID了，因为浏览器已经有了JSESSIONID了。
+
+## 实验 利用URL重写实现Session跟踪
+当浏览器不支持cookie时，可以利用response.encodeURL()对超链接和form表单的action进行URL重写，还可以利用response.encodeRedirectURL()对重定向URL进行重写。此时web容器会重写URL，在URL后面加上JSESSIONID:`http://localhost:8080/session/SessionServlet1;jsessionid=EB94A4089D10B5979C081582C14D9532`。
+
 
 
 
