@@ -1,0 +1,37 @@
+# 安全登录与密码学
+
+1. 使用HTTPS：以保证通信通道安全
+2. 前端也要加密：md5(password) 
+3. 后端加密： md5(salt+md5(password))
+4. salt存储在后端数据库，甚至不同的用户采用不同的salt
+
+# 学习一些密码学相关的东西
+
+1. HTTPS
+2. 公钥秘钥
+3. SSL
+4. 常用加密算法
+5. token
+6. RSA
+
+
+# 参考资料
+* [如何保证用户登录时提交密码已经加密？](https://www.zhihu.com/question/20060155)
+* [加密–RSA前端与后台的加密&解密](http://www.cnblogs.com/Leo_wl/p/5763243.html)
+* [HTTPS是如何保证连接安全：每位Web开发者都应知道的](http://blog.jobbole.com/45530/)
+* [Web前端密码加密是否有意义？](https://www.zhihu.com/question/25539382)
+* [What should every programmer know about security?](http://stackoverflow.com/questions/2794016/what-should-every-programmer-know-about-security)
+* [使用密码学技术保护敏感信息](http://www.importnew.com/3456.html)
+* [我也想来谈谈HTTPS](http://web.jobbole.com/88724/)
+* [如何在浏览器端加密](http://blog.jobbole.com/50826/)
+* [第五章 编码/加密——《跟我学Shiro》](http://jinnianshilongnian.iteye.com/blog/2021439)
+* [加盐密码哈希：如何正确使用](http://blog.jobbole.com/61872/)
+* [SSL是如何加密传输的数据的!](https://evergreen-tree.github.io/articles/2016-05/daily-ssl-rsa-des-algorithm?hmsr=toutiao.io&utm_medium=toutiao.io&utm_source=toutiao.io)
+* [web中间人攻击的威胁](https://www.zhuyingda.com/blog/article.html?id=7&hmsr=toutiao.io&utm_medium=toutiao.io&utm_source=toutiao.io)
+* [深入理解信息安全领域相关术语](http://www.secbox.cn/hacker/13753.html?hmsr=toutiao.io&utm_medium=toutiao.io&utm_source=toutiao.io)
+* [“HTTPS”安全在哪里？](http://bugly.qq.com/bbs/forum.php?hmsr=toutiao.io&mod=viewthread&tid=1074&utm_medium=toutiao.io&utm_source=toutiao.io)
+* [各种安全相关思维导图整理收集](https://github.com/phith0n/Mind-Map?hmsr=toutiao.io&utm_medium=toutiao.io&utm_source=toutiao.io)
+* [开发人员应该知道的安全知识](http://www.yangguo.info/2016/03/12/%E5%BC%80%E5%8F%91%E4%BA%BA%E5%91%98%E5%BA%94%E8%AF%A5%E6%8E%8C%E6%8F%A1%E7%9A%84%E5%AE%89%E5%85%A8%E7%9F%A5%E8%AF%86/?hmsr=toutiao.io&utm_medium=toutiao.io&utm_source=toutiao.io)
+* [有https就够安全了吗？](http://rdcqii.hundsun.com/portal/article/421.html?hmsr=toutiao.io&utm_medium=toutiao.io&utm_source=toutiao.io)
+* [登录工程：传统 Web 应用中的身份验证技术](http://insights.thoughtworkers.org/traditional-web-app-authentication/?hmsr=toutiao.io&utm_medium=toutiao.io&utm_source=toutiao.io)
+* [对抗拖库 —— Web 前端慢加密](http://web.jobbole.com/84343/)
