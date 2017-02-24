@@ -1,6 +1,6 @@
-# IO（1）API分析 InputStream
-
-## available()
+# IO（1）API分析 InputStream和OutputStream
+## InputStream
+### available()
 ```java
 public int available() throws IOException;
 ```
@@ -78,7 +78,7 @@ char=z
 available=0
 ```
 
-## read()
+### read()
 ```java
 public abstract int read() throws IOException;
 ```
@@ -90,7 +90,7 @@ public abstract int read() throws IOException;
 改方法会造成阻塞，直到下一个byte available，或者读到文件末尾，或者抛出异常。
 
 
-## read(byte[] b,int off,int len)
+### read(byte[] b,int off,int len)
 ```java
 public int read(byte[] b,int off,int len) throws IOException;
 ```
@@ -106,20 +106,21 @@ public int read(byte[] b,int off,int len) throws IOException;
 参数：b数组用于存储读到的byte，数组长度应该至少等于length。off表示读取到的第一个byte保存在数组b的第off个位置，一般设置off=0，即让byte从b数组头部开始填充。len表示**至多**要从input stream中读取len个byte。如果len=0，则该方法返回0。
 
 返回值：返回实际读到的byte个数，如果已经到达文件末尾，则返回-1。
-## read(byte[] b)
+
+### read(byte[] b)
 ```java
 public int read(byte[] b) throws IOException
 ```
 该方法会把**至多**b.length个byte从input stream中读取出来，并保存到b数组中。其等价于调用` read(b, 0, b.length)`。
 
-## markSupported()
+### markSupported()
 ```java
 public boolean markSupported();
 ```
 
 判断这个input stream是否支持mark和reset操作。InputStream不支持mark和reset，所以该方法返回false。我们可以让InputStream的子类支持mark和reset。
 
-## mark(int readlimit)
+### mark(int readlimit)
 ```java
 public void mark(int readlimit)
 ```
@@ -128,21 +129,21 @@ public void mark(int readlimit)
 
 readlimit参数在官方文档上解释为：从最后一次调用mark()，到调用reset()方法之间，如果读到的byte个数（假设等于count），大于readlimit，则mark和reset无效，并且会抛出异常。但实际测试的结果是，只要count值小于/等于input stream内部的缓存数组length，即缓存数组能容纳这么多个count，则mark/reset操作依然有效，不会受到readlimit限制。只有当内部缓存数组无法容纳count个byte时，mark/reset操作才会失败。因此readlimit严格来说，并没什么用。参考：[BufferedInputStream类mark(int readlimit)中readlimit的确切含义](http://blog.csdn.net/hui12343211/article/details/14166327)
 
-## reset()
+### reset()
 ```java
 public void reset() throws IOException
 ```
 
 reset方法会把指针定位到最后一次mark的地方，然后从mark的下一个byte开始，接着读取byte。比如字符串"abcdefgh"，在读取c之后，mark了一次，接着读取f之后执行reset，则最终读取结果是"abcdefdefgh"。
 
-## close()
+### close()
 ```java
 public void close() throws IOException
 ```
 
 该方法会关闭input stream并释放相关资源。InputStream的close()方法啥也没做，是一个空方法。
 
-## skip(long n)
+### skip(long n)
 ```java
 public long skip(long n) throws IOException;
 ```
@@ -165,3 +166,41 @@ for(int i=0;i<b.length;i++) {
 	System.out.print((char)b[i]); //fghijk
 }
 ```
+
+## OutputStream
+# IO（3）学习OutputStream
+
+### flush
+```java
+public void flush() throws IOException
+```
+
+flash方法用于把目前存在于缓存中的byte强制写到目的地中。该方法只负责通知底层进行写入操作，但具体是否写入成功，flush并不关心。OutputStream中的flush是个空方法，原因和简单因为OutputStream本身并不带有缓存。
+
+### write(int b)
+```java
+public abstract void write(int b) throws IOException
+```
+
+该方法会把一个byte写入到目的地。注意，方法参数是int，一个int的长度是4个byte。所以，在执行写入操作时，只会写入int的低8位(eight low-order bits)，而忽略掉剩下的24bit(24 high-order bits)。该方法在OutputStream是一个抽象方法，子类必须提供实现。
+
+### write(byte[] b)
+```java
+public void write(byte[] b) throws IOException
+```
+
+该方法会把b数组中的byte都写入到目的地。其内部会转调`write(b, 0, b.length)`。
+
+### write(byte b[], int off, int len)
+```java
+public void write(byte b[], int off, int len) throws IOException 
+```
+
+该方法会尝试把b[]数组中，"至多"len个byte写入到目的地。其内部会循环调用`write(int b)`。b用于存储"源数据"。off表示从b中的第off个位置开始write数据。length表示至多写入多少个byte。
+
+### close()
+```java
+public void close() throws IOException
+```
+
+该方法用于关闭输出流，并释放相关资源。一个已经被关闭的输出流无法再执行流操作，也无法重新打开流。OutputStream中的close()是空方法。

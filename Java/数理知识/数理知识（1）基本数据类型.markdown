@@ -1,0 +1,194 @@
+# 数理知识（1）基本数据类型
+## 整型/整数
+* byte：占1个字节(8bit)。范围是[-128,127]
+* short：占2个字节(16bit)。范围是[-32768,32767]
+* int：占4个字节(32bit)。范围是[-2147483648,2147483647]
+* long:占8个字节(64bit)。范围是[-9223372036854775808,9223372036854775807]
+
+对于不同的计算机，无论是32位，还是64位的计算机、操作系统，java的基本数据类型的存储方式和范围都是一致不变的。在给整型变量赋值时，一定要注意，该类型的整型变量是否能容纳这个值。
+
+我们可以使用4种方式表示整型字面量：
+
+* 十进制：直接写字面量
+* 十六进制：以0x或0X开头
+* 二进制：以0b或0B开头，低位在右边，高位在左边
+* 八进制：以0开头
+
+```java
+byte number10 = 10;
+short number16 = 0X100;
+int number2 = 0B011;
+int number8 = 011;
+		
+//System.out.println()会把变量转为十进制来打印
+System.out.println(number10); //10
+System.out.println(number16); //256
+System.out.println(number2); //3
+System.out.println(number8); //9
+```
+
+日常生活中我们也可以使用,来分隔长数字，以此来提供长数字的可读性，比如10,3232,4545,6776。在java中，我们可以使用_来分隔长数字。
+
+```java
+long longValue = 10_3232_4545_6776L;//long类型一般以L结尾，以此来区别于int类型
+System.out.println(longValue); //10323245456776
+```
+
+## 浮点型/浮点数
+* float：占4个字节，大概可以精确到小数点后7位。必须在数字后面加上f或F来表示float类型。
+* double：占8个字节，大概可以精确到小数点后17位。java默认使用double来表示小数。
+
+浮点数同样可以像整数一样用_来分隔表示。我们还可以通过写成指数形式，在小数后面添加一个e或E，后面跟着10的指数次幂。此外浮点数也能使用“加加减减”运算符，也能进行取余运算。
+
+```java
+long v1 = 149600000;
+double v2 = 1.496E8;
+System.out.println(v1==v2); //true
+		
+double v3 = 0.0000000009;
+double v4 = 9.0e-10;
+System.out.println(v3==v4); //true
+```
+
+## boolean类型
+布尔类型只有两个值：false和true。布尔类型和整型不能互相转换。
+
+## char类型
+char类型占两个字节。一个char可以用来表示Unicode基本平面的字符。如果要表示Unicode辅助平面的字符，则必须用两个char(char数组)。char字符需要用单引号括起来，如果要用unicode的codePoint值来表示某一个字符，则必须用\u或者\U开头。
+
+```java
+char c = '\u0041';  //字符A的unicode码点值的十六进制值是41
+System.out.println(c); //A
+```
+
+## 除法运算
+java的除法运算与数学上的除法运算是一样的，对于x/y，x是“被除数”，y是“除数”：
+
+* 如果|x|<|y|，则结果为0。
+* 如果|x|>|y|，当x与y同符号，则结果为正，当x与y不同符号，则结果为负。
+
+```java
+//|x|>|y|
+int a = 7/3; //2 ++ |x|>|y|
+int b = -7/-3; //2 -- |x|>|y|
+int c = 7/-3; //-2 +- |x|>|y|
+int d = -7/3; //-2 -+ |x|>|y|
+System.out.println("a="+a+",b="+b+",c="+c+",d="+d);
+
+//|x|<|y|
+int e = 3/7; //0 ++ |x|<|y| 
+int f = -3/-7; //0 -- |x|<|y|
+int g = 3/-7; //0 +- |x|<|y|
+int h = -3/7; //0 -+ |x|<|y|
+System.out.println("e="+e+",f="+f+",g="+g+",h="+h);
+		
+//int的最小值是-2147483648，除以-1正常来说应该等于2147483648
+//但由于int的最大值是2147483647，所以java不知所措，只能让其值不变
+int i = -2147483648;
+int j = i/-1; //依然是-2147483648
+System.out.println(j);
+```
+
+## 取余运算
+取余运算与乘法、除法运算符具有同样的优先级。对于x%y来说：
+
+* 当|x|>|y|，余数的绝对值等于数学意义上的余数，并且其符号与x的符号相同。
+* 当|x|<|y|，则余数等于x本身。
+
+```java
+//|x|>|y|
+int a = 7%3; //1 ++ |x|>|y|
+int b = -7%-3; //-1 -- |x|>|y|
+int c = 7%-3; //1 +- |x|>|y|
+int d = -7%3; //-1 -+ |x|>|y|
+System.out.println("a="+a+",b="+b+",c="+c+",d="+d);
+		
+//|x|<|y|
+int e = 3%7; //3 ++ |x|<|y|
+int f = -3%-7; //-3 -- |x|<|y|
+int g = 3%-7; //3 +- |x|<|y|
+int h = -3%7; //-3 -+ |x|<|y|
+System.out.println("e="+e+",f="+f+",g="+g+",h="+h);
+```
+
+##加加减减
+* ++a是前缀形式（prefix form），它表示先对a执行+1操作，然后在执行其他操作。
+* a++是后缀形式(postfix form)，它表示先执行其他操作，然后再对a执行+1操作。
+
+无论是++a还是a++，a的值最终都会变化，最终都会+1，即a=a+1。
+
+```java
+int a = 10;
+int b = 10;
+int c = 20;
+int d = ++a + c; //31
+int e = b++ + c; //30
+System.out.println("d="+d+",e="+e);
+System.out.println("a="+a); //11
+System.out.println("b="+b); //11
+```
+
+## 整数运算，浮点数运算
+不同类型的整数运算会存在一些隐式地自动转化过程，因此也需要我们自行处理类型转换。
+
+```java
+/*
+ * 对于byte和short类型，编译器会先转为int类型，再进行运算，
+ * 因此得到的值也是int类型，所以需要强制类型转换
+ * */
+short a = 2;
+short b = 3;
+short c= (short)(a*b);
+byte d = 2;
+byte e = 3;
+byte f = (byte)(d*e);
+System.out.println("c="+c+",f="+f);
+		
+/*
+ * 对于long类型，由于其范围比int大，因此编译器自动把int转为long之后再进行运算
+ * 得到的结果也是long类型，所以需要强制类型转换
+ * */
+long g = 2L;
+long h = 3L;
+int i = 2;
+long j = 3L;
+		
+long k = g*h;
+int m = (int)(g*h);
+long n = j*k;
+int p = (int)(j*k);
+
+//对于浮点数运算，其结果也会转成范围较大的类型
+double d1 = 2.2;
+float f1 = 2.0f;
+float x = (float)(d1/f1); //1.1
+double y = d1/f1; //1.1
+System.out.println("x="+x+",y="+y); //1.1
+```
+
+从上面可以看出，不同类型的数据进行四则运算时，其结果类型是范围最大的那个类型，具体的规则如下，按顺序匹配规则，匹配成功后不再继续匹配：
+
+1. 如果其中一个操作数为double类型，则编译器在运算之前将另一个数转换为double类型。
+2. 如果其中一个操作数为float类型，则编译器在运算之前将另一个数转换为float类型。
+3. 如果其中一个操作数为long类型，则编译器在运算之前将另一个数转换为long类型。
+
+>byte-->short-->int-->long-->float>-->double
+
+如果把左边类型的变量赋值给右边类型的变量，java会自动进行类型转换，因为左边的变量类型更窄，把它们赋值到右边的变量类型(较宽)没有任何问题，但需要特别注意的是，long转赋值到float时，必须考虑float的最大值，因为long占8个字节，而float占4个字节。
+
+如果把右边类型的变量赋值给左边类型的变量，则必须显式地进行强制类型转换，且需要考虑进度丢失的风险。
+
+## 运算溢出
+```java
+int i = Integer.MAX_VALUE;
+System.out.println(i*4); //-4，结果值超过了int的范围
+```
+
+## 操作小结：
+1. 算数操作：Arithmetic operator
+2. 关系操作、逻辑操作：Relational and logical Operator（==, >=, !=, &&, ||, etc）
+3. 位操作：Bitwise operator
+4. 复合操作赋值：comound assignment（+=, -=）
+5. 类型转换：casting
+
+
