@@ -1,11 +1,10 @@
-1. 按位操作符
-2. 移位操作符
-3. &&与&，|与||
+# 操作符
+* 位操作符
 
 # lang包
-* 各大包装类
-* 枚举类型
-* Math
+* 各大包装类：ok
+* 枚举类型：语法糖而已，花一些零碎时间看就好
+* Math：ok，剩下一些不常用的方法没看，用到再研究吧。
 * System
 
 # util
@@ -16,7 +15,7 @@
 * Timer
 * StringTokenizer
 * Arrays
-* Random
+* Random：ok
 
 # math包
 * BigDecimal

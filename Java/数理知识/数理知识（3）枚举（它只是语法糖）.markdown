@@ -1,0 +1,26 @@
+## 枚举类型
+枚举类型是一种由开发者自定义的数据类型，它的底层实际上是从0开始的int值，枚举类型赋予int值更加有意义的名字。
+
+枚举类型可以定义在类之外，以供同一个package下的其他类使用。也可以定义在成员变量的位置，以供这个类使用。但枚举类型不能定义为局部变量。由于枚举类型是一种自定义的数据类型，因此类型名称建议首字母大写。
+
+```java
+//定义为全局变量，同一个包下的类可以使用
+enum Day {Monday, tuesday, Wednesday, Thursday, Friday, Satday, Sunday}
+
+public class Math1 {
+   //定义为成员变量，仅Math1类的方法可以使用 
+	enum Month {January, February, Marth, April, May, June, July, 
+		August, September, October, November, December}
+	
+	public static void main(String[] args) {
+		Day monday = Day.Monday;
+		Month february = Month.February;
+		System.out.println("Today is " + monday);
+		System.out.println("It is " + february);
+	}
+}
+
+//打印结果
+Today is Monday
+It is February
+```

@@ -36,7 +36,7 @@ System.out.println(longValue); //10323245456776
 
 ## 浮点型/浮点数
 * float：占4个字节，大概可以精确到小数点后7位。必须在数字后面加上f或F来表示float类型。
-* double：占8个字节，大概可以精确到小数点后17位。java默认使用double来表示小数。
+* double：占8个字节，大概可以精确到小数点后18位。java默认使用double来表示小数。
 
 浮点数同样可以像整数一样用_来分隔表示。我们还可以通过写成指数形式，在小数后面添加一个e或E，后面跟着10的指数次幂。此外浮点数也能使用“加加减减”运算符，也能进行取余运算。
 
@@ -48,6 +48,32 @@ System.out.println(v1==v2); //true
 double v3 = 0.0000000009;
 double v4 = 9.0e-10;
 System.out.println(v3==v4); //true
+```
+
+建议在开发时使用double来表示浮点数，不要使用float。原因请看[此贴10楼](http://bbs.csdn.net/topics/350238042)
+
+>记住java一定要用double，更鼓不变，就算数值不大也要用double。
+了解java虚拟机的底层会知道，float放在内存中其实是当作double来处理的，它不会比double更节约内存资源，对应的double虚拟机会直接以double形式来进行处理，快速而且精度高，但是如果用float，不但不会节约内存资源，虚拟机为了校验float的精度，会花费更多的系统资源，例如cpu时钟，程序执行步骤等等。
+相对于这点，整数类型，能用int就用int，不要用什么short类型，道理是一样，其实虚拟机中short,char,boolean,byte在内存中都是以int形式来处理的，为了校验精度，虚拟机还会付出格外的开销，这样其实得不偿失，不要自作聪明以为节约了内存，其实错了。当然long类型例外，虽然long类型也会增加资源的开销，但是毕竟能完成int完成不了的功能。
+还有，其实这些资源的开销对于整个应用程序和现有硬件资源而言就是九牛一毛，微乎其微，没有必要过于在意。就用习惯的形式即可。不要自作聪明的用特别的数据类型，浮点就double，整形就int，长整型就long，其它的必要性都不大(byte的话，用来做数组还是很方便的，除此不推荐使用)
+
+### 浮点数与0比较
+```java
+float f0 = 0.33f + 0.33f;
+System.out.println(f0); //0.66
+System.out.println(f0 - 0.66f == 0.0f); //true
+	
+float f1 = 0.33f * 0.2f;
+System.out.println(f1 - 0.066f == 0.0f); //false
+System.out.println(f1); //0.06600001
+		
+double d0 = 0.33d + 0.33d;
+System.out.println(d0); //0.66
+System.out.println(d0 - 0.66d == 0.0d); //true
+		
+double d1 = 0.33d * 0.2d;
+System.out.println(d1); //0.066
+System.out.println(d1 - 0.066d == 0.0d); //true
 ```
 
 ## boolean类型
@@ -178,17 +204,305 @@ System.out.println("x="+x+",y="+y); //1.1
 
 如果把右边类型的变量赋值给左边类型的变量，则必须显式地进行强制类型转换，且需要考虑进度丢失的风险。
 
+### 不带后缀的整数
+对于不带后缀的整数，编译器会默认为是int类型，因此需要注意这个整数不要超过int的范围。此外，还需注意除法的问题：
+
+```java
+/**
+由于1和3都不带后后缀，因此默认为int类型，根据除法运算符的规则，结果等于0，并且也是int类型。
+接着需要把结果赋值到double变量上，因此自动转为0.0
+*/
+double d1 = 1/3; //d1=0.0
+
+ 
+/**
+由于被除数和除数都带后缀，因此它们表示“显式地指定被除数和除数都是double类型”
+所以除法结果也是double类型，非常精确
+*/
+double d2 = 1d/3d; //d2=0.3333333333333333
+
+double d3 = 100000000000000000000/3; //报错，被除数超过int的最大范围
+
+double d3 = 100000000000000000000L/3; //正确，我们显式地指定被除数为long类型，long足以容纳被除数
+```
+
 ## 运算溢出
 ```java
 int i = Integer.MAX_VALUE;
 System.out.println(i*4); //-4，结果值超过了int的范围
 ```
 
+## 逻辑运算
+* &表示**与**。&左右两边的表达式都会执行。
+* |表示**或**。|左右两边的表达式都会执行。
+* ^表示**异或**。当两个表达式的值不相同(异)时，结果为true，当两个表达式的值相同时，结果为false。
+* !表示**非**
+* &&表示**短路与**。短路的意思是：只有当&&左边的表达式为true时，才会执行右边的表达式。
+* ||表示**短路或**。短路的意思是：只有当||左边的表达式为false时，才会执行右边的表达式。
+
+短路既满足了逻辑运算的要求，又有助于节约计算资源，因此推荐使用。但短路有时也会把一些bug隐藏起来，需要特别注意。
+
+```java
+int x=0;
+int y=0;
+
+//报错：java.lang.ArithmeticException
+//因为x/y！=0
+if(x!=0 & x/y!=0) //& 左右两边都会执行
+	System.out.println("&");
+
+//报错：java.lang.ArithmeticException
+//因为x/y！=0
+if(x!=0 | x/y!=0)  //| 左右两边都会执行
+    System.out.println("|");
+
+//不报错，也无输出，因为x!=0为false，因此x/y!=0永远不会执行
+if(x!=0 && x/y!=0) 
+    System.out.println("&&"); //&& 当左边为true时，才会执行右边
+
+//报错：java.lang.ArithmeticException
+//因为x/y！=0
+if(x!=0 || x/y!=0) 
+    System.out.println("||"); //|| 当左边为false时，才会执行右边
+```
+
 ## 操作小结：
-1. 算数操作：Arithmetic operator
-2. 关系操作、逻辑操作：Relational and logical Operator（==, >=, !=, &&, ||, etc）
-3. 位操作：Bitwise operator
-4. 复合操作赋值：comound assignment（+=, -=）
-5. 类型转换：casting
+1. 算术运算符
+2. 赋值运算符
+3. 比较运算符
+4. 逻辑运算符
+5. 移位运算符
+6. 类型转换casting
+
+![操作符](http://wx1.sinaimg.cn/mw690/0065Y1avgy1fd1c452q79j30i20pvjvp.jpg)
+
+
+## Random
+Random类用于生产随机数，Random类有一个随机种子seed，随机数和种子之间的关系遵循一下规则：
+
+* 种子不同，产生不同的随机数。
+* 种子相同，即使Random实例不同也产生相同的随机数。
+
+一般我们直接使用Random类的无参数构造函数就可以了，无需显式地指定随机种子。
+
+```java
+//产生一个随机的boolean值，值只能是true或false
+boolean nextBoolean()
+
+//产生一个随机的浮点数，范围是[0,1)
+float nextFloat()
+double nextDouble()
+
+//产生一个随机的int，范围是int的范围[-2147483648,2147483647]
+int nextInt()
+
+//产生一个随机的int，范围是[0,n)
+int nextInt(n)
+
+//产生一个随机的long，范围是long的范围[-9223372036854775808,9223372036854775807]
+int nextInt()
+
+//Math类也有一个静态方法，生成double随机数，范围是[0,1)
+//其实底层是转调random.nextDouble
+double Math.random()
+```
+
+## Math
+Math类提供了众多数学运算的便捷方法。Math类并没有public的构造函数，其所有的成员变量和方式均是static的。下面列出常用的方法，其他的自己翻API吧！
+
+### 静态成员变量 
+```java
+//底数
+static double E 
+//圆周率
+static double PI
+```
+
+### 取整
+#### rint
+rint()方法会返回最接近这个double参数的整数。（在正无穷和负无穷方向都考虑）。如果在正无穷和负无穷方向上都有一个最接近的整数(这个double正好在中间)，则返回偶数整数。（even偶数，odd基数）
+
+```java
+//返回最接近这个double参数的整数，返回值用double表示
+//如果参数本身就是个整数，则返回自身
+static double rint(double a)
+
+//例子
+double d0 = 18.5;
+double d1 = -19.5;
+double d2 = 19.498;
+double d3 = 20.574;
+System.out.println(Math.rint(d0));//18
+System.out.println(Math.rint(d1));//-20
+System.out.println(Math.rint(d2));//19
+System.out.println(Math.rint(d3));//21
+```
+
+#### ceil
+ceil这个单词翻译过来就是天花板，它会返回double参数在正无穷方向上最接近的整数，并把返回值转为double类型。
+
+```java
+static double ceil(double a)
+
+//例子
+//ceil:天花板，往正无穷方向取最接近的整数
+System.out.println(Math.ceil(0.5)); //1.0
+System.out.println(Math.ceil(-0.5)); //-0.0 这是negative zero
+System.out.println(Math.ceil(12.569)); //13.0
+System.out.println(Math.ceil(-12.569)); //-12.0
+```
+
+#### floor
+floor这个单词翻译过来就是地板，它会返回double参数在负无穷方向上最接近的整数，并把返回值转为double类型。
+
+```java
+static double floor(double a)
+
+//例子
+//floor:地板，往负无穷方向取最接近的整数
+System.out.println(Math.floor(0.5)); //+0.0 这是positive zero
+System.out.println(Math.floor(-0.5)); //-1.0 
+System.out.println(Math.floor(12.569)); //12.0
+System.out.println(Math.floor(-12.569)); //-13.0
+```
+
+####round
+严格来说，round方法并不能算作是精确的“四舍五入”，它只能用于"保留整数的四舍五入算法"。在API文档中有描述：
+
+>static long round(double a)等价于(long)Math.floor(a + 0.5d)
+
+>static int round(float a) 等价于 (int)Math.floor(a + 0.5f)
+
+注意，round方法的返回值是整数类型，因此它不能用做“保留后两位小数的四舍五入算法”。
+
+```java
+static int round(float a)
+static long round(double a)
+
+//例子
+//round()的结果等价于(long)Math.floor(a + 0.5)
+System.out.println(Math.round(0.4213)); //0 
+System.out.println(Math.round(0.9845)); //1
+System.out.println(Math.round(-0.2366)); //0
+System.out.println(Math.round(-0.5901)); //-1
+System.out.println(Math.round(12.123)); //12
+System.out.println(Math.round(12.569)); //13
+System.out.println(Math.round(17.51)); //18
+System.out.println(Math.round(-17.42)); //-17
+```
+
+### 绝对值
+```java
+//对于int和long来说，如果int/long的值等于int/long范围的最小值，则abs()后，返回值依然是最小值，因为已经超出范围了。
+static double abs(double a)
+static float abs(float a)
+static int abs(int a)
+static long abs(long a)
+```
+
+### 两者比较大小
+```java
+//如果两者值相等，则返回相等值
+static double max(double a, double b)
+static float max(float a, float b)
+static int max(int a, int b)
+static long max(long a, long b)
+static double min(double a, double b)
+static float min(float a, float b)
+static int min(int a, int b)
+static long min(long a, long b)
+```
+
+### N次幂
+```java
+//a的b次方，这个函数坑超级多，详见API文档
+static double pow(double a, double b)
+
+//例子
+double d = 1.0/4.0;
+System.out.println(Math.pow(256,d)); //4.0
+```
+
+### 平方根
+```java
+//返回参数的平方根
+static double sqrt(double a)
+
+//例子
+double d = 25;
+System.out.println(Math.sqrt(d));//5.0
+```
+
+### signum
+```java
+如参数>0则返回1.0，如参数<0则返回-1.0，如参数=0则返回0
+static double signum(double d)
+static float signum(float f)
+```
+
+## 包装类
+所有的包装类都重写了equals()方法，调用equals()方法会对其包装的值进行比较。
+
+### Boolean
+```
+//构造Boolean（装箱）
+Boolean(boolean b) //构造函数
+static Boolean valueOf(boolean b) //推荐
+static Boolean valueOf(String s) //推荐，大小写不敏感
+
+//Boolean-->boolean：解析boolean（拆箱）
+boolean booleanValue()
+
+//Boolean/boolean-->String
+String toString()
+static String toString(boolean b)
+```
+
+### Integer
+```java
+静态成员变量
+static int MAX_VALUE
+static int MIN_VALUE
+
+//构造Integer
+Integer valueOf(int i)
+static Integer valueOf(String s) //参数只能是整数形式，不然运行时会报错
+Integer(int value)
+Integer(String s) ////参数只能是整数形式，不然运行时会报错
+
+//格式转换：Integer-->XXX
+int intValue() //to int
+short shortValue() //to short
+long longValue() //to long
+float floatValue() //to float
+double doubleValue() //to double
+static Integer valueOf(String s) //to String
+
+//格式转换:String-->int
+static int parseInt(String s) 
+
+//显示转换：把int用二进制、八进制、十六进制表示
+static String toBinaryString(int i)
+static String toOctalString(int i)
+static String toHexString(int i)
+```
+
+### 其他包装类：Byte,Short,Long,Float,Double
+其他类基本和Integer的套路是一样的，具体可查API：
+
+* 使用静态成员变量表示最大、最小值。
+* 一个以基本类型作为参数的构造函数，一个以String作为参数的构造函数
+* valueOf()是静态方法，可以把基本类型或String封装成对应的包装类
+* xxxValue()是普通方法，可以把这个包装类转为具体的xxx基本类型
+* parseXXX()是静态方法，可以接收String作为参数，并转为对应的基本类型
+* toBinaryString(), toOctalString(), toHexString()，转为进制显示形式
+
+
+
+
+
+
+
+
 
 
