@@ -53,9 +53,9 @@ System.out.println(v3==v4); //true
 建议在开发时使用double来表示浮点数，不要使用float。原因请看[此贴10楼](http://bbs.csdn.net/topics/350238042)
 
 >记住java一定要用double，更鼓不变，就算数值不大也要用double。
-了解java虚拟机的底层会知道，float放在内存中其实是当作double来处理的，它不会比double更节约内存资源，对应的double虚拟机会直接以double形式来进行处理，快速而且精度高，但是如果用float，不但不会节约内存资源，虚拟机为了校验float的精度，会花费更多的系统资源，例如cpu时钟，程序执行步骤等等。
-相对于这点，整数类型，能用int就用int，不要用什么short类型，道理是一样，其实虚拟机中short,char,boolean,byte在内存中都是以int形式来处理的，为了校验精度，虚拟机还会付出格外的开销，这样其实得不偿失，不要自作聪明以为节约了内存，其实错了。当然long类型例外，虽然long类型也会增加资源的开销，但是毕竟能完成int完成不了的功能。
-还有，其实这些资源的开销对于整个应用程序和现有硬件资源而言就是九牛一毛，微乎其微，没有必要过于在意。就用习惯的形式即可。不要自作聪明的用特别的数据类型，浮点就double，整形就int，长整型就long，其它的必要性都不大(byte的话，用来做数组还是很方便的，除此不推荐使用)
+>了解java虚拟机的底层会知道，float放在内存中其实是当作double来处理的，它不会比double更节约内存资源，对应的double虚拟机会直接以double形式来进行处理，快速而且精度高，但是如果用float，不但不会节约内存资源，虚拟机为了校验float的精度，会花费更多的系统资源，例如cpu时钟，程序执行步骤等等。
+>相对于这点，整数类型，能用int就用int，不要用什么short类型，道理是一样，其实虚拟机中short,char,boolean,byte在内存中都是以int形式来处理的，为了校验精度，虚拟机还会付出格外的开销，这样其实得不偿失，不要自作聪明以为节约了内存，其实错了。当然long类型例外，虽然long类型也会增加资源的开销，但是毕竟能完成int完成不了的功能。
+>还有，其实这些资源的开销对于整个应用程序和现有硬件资源而言就是九牛一毛，微乎其微，没有必要过于在意。就用习惯的形式即可。不要自作聪明的用特别的数据类型，浮点就double，整形就int，长整型就long，其它的必要性都不大(byte的话，用来做数组还是很方便的，除此不推荐使用)
 
 ### 浮点数与0比较
 ```java
@@ -307,138 +307,7 @@ int nextInt()
 double Math.random()
 ```
 
-## Math
-Math类提供了众多数学运算的便捷方法。Math类并没有public的构造函数，其所有的成员变量和方式均是static的。下面列出常用的方法，其他的自己翻API吧！
 
-### 静态成员变量 
-```java
-//底数
-static double E 
-//圆周率
-static double PI
-```
-
-### 取整
-#### rint
-rint()方法会返回最接近这个double参数的整数。（在正无穷和负无穷方向都考虑）。如果在正无穷和负无穷方向上都有一个最接近的整数(这个double正好在中间)，则返回偶数整数。（even偶数，odd基数）
-
-```java
-//返回最接近这个double参数的整数，返回值用double表示
-//如果参数本身就是个整数，则返回自身
-static double rint(double a)
-
-//例子
-double d0 = 18.5;
-double d1 = -19.5;
-double d2 = 19.498;
-double d3 = 20.574;
-System.out.println(Math.rint(d0));//18
-System.out.println(Math.rint(d1));//-20
-System.out.println(Math.rint(d2));//19
-System.out.println(Math.rint(d3));//21
-```
-
-#### ceil
-ceil这个单词翻译过来就是天花板，它会返回double参数在正无穷方向上最接近的整数，并把返回值转为double类型。
-
-```java
-static double ceil(double a)
-
-//例子
-//ceil:天花板，往正无穷方向取最接近的整数
-System.out.println(Math.ceil(0.5)); //1.0
-System.out.println(Math.ceil(-0.5)); //-0.0 这是negative zero
-System.out.println(Math.ceil(12.569)); //13.0
-System.out.println(Math.ceil(-12.569)); //-12.0
-```
-
-#### floor
-floor这个单词翻译过来就是地板，它会返回double参数在负无穷方向上最接近的整数，并把返回值转为double类型。
-
-```java
-static double floor(double a)
-
-//例子
-//floor:地板，往负无穷方向取最接近的整数
-System.out.println(Math.floor(0.5)); //+0.0 这是positive zero
-System.out.println(Math.floor(-0.5)); //-1.0 
-System.out.println(Math.floor(12.569)); //12.0
-System.out.println(Math.floor(-12.569)); //-13.0
-```
-
-####round
-严格来说，round方法并不能算作是精确的“四舍五入”，它只能用于"保留整数的四舍五入算法"。在API文档中有描述：
-
->static long round(double a)等价于(long)Math.floor(a + 0.5d)
-
->static int round(float a) 等价于 (int)Math.floor(a + 0.5f)
-
-注意，round方法的返回值是整数类型，因此它不能用做“保留后两位小数的四舍五入算法”。
-
-```java
-static int round(float a)
-static long round(double a)
-
-//例子
-//round()的结果等价于(long)Math.floor(a + 0.5)
-System.out.println(Math.round(0.4213)); //0 
-System.out.println(Math.round(0.9845)); //1
-System.out.println(Math.round(-0.2366)); //0
-System.out.println(Math.round(-0.5901)); //-1
-System.out.println(Math.round(12.123)); //12
-System.out.println(Math.round(12.569)); //13
-System.out.println(Math.round(17.51)); //18
-System.out.println(Math.round(-17.42)); //-17
-```
-
-### 绝对值
-```java
-//对于int和long来说，如果int/long的值等于int/long范围的最小值，则abs()后，返回值依然是最小值，因为已经超出范围了。
-static double abs(double a)
-static float abs(float a)
-static int abs(int a)
-static long abs(long a)
-```
-
-### 两者比较大小
-```java
-//如果两者值相等，则返回相等值
-static double max(double a, double b)
-static float max(float a, float b)
-static int max(int a, int b)
-static long max(long a, long b)
-static double min(double a, double b)
-static float min(float a, float b)
-static int min(int a, int b)
-static long min(long a, long b)
-```
-
-### N次幂
-```java
-//a的b次方，这个函数坑超级多，详见API文档
-static double pow(double a, double b)
-
-//例子
-double d = 1.0/4.0;
-System.out.println(Math.pow(256,d)); //4.0
-```
-
-### 平方根
-```java
-//返回参数的平方根
-static double sqrt(double a)
-
-//例子
-double d = 25;
-System.out.println(Math.sqrt(d));//5.0
-```
-
-### signum
-```java
-如参数>0则返回1.0，如参数<0则返回-1.0，如参数=0则返回0
-static double signum(double d)
-static float signum(float f)
-```
 
 ## 包装类
 所有的包装类都重写了equals()方法，调用equals()方法会对其包装的值进行比较。

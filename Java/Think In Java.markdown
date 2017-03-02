@@ -31,3 +31,80 @@
 static修饰成员变量和局部变量时，它表示这个成员变量/局部变量只有一份，而不会为每个对象都创建一份！static变量在程序启动时就创建，在程序关闭时才被自动销毁。
 
 最后还讲了一些关于生成注释doc文档的方法。
+
+
+
+## 第11章 《持有对象》
+
+### 11.1
+
+有可能的话，尽量会用接口类型变量来持有容器对象，这样未来可以更方便的进行替换。
+
+### 11.2
+
+容器可以大致分为两类：
+
+1. Collection：一个独立元素的序列。LIst、Set、Queue属于这一类。List必须按照插入的顺序保持元素。Set不能有重复元素。Queue按照排队规则来确定对象产生的顺序（通常与它们被插入的顺序相同）
+2. Map：一组成对的”键值对“对象，允许你使用键来查找值。ArrayList允许你使用数字来查找值，因此可以说它将数字与对象关联在了一起。而Map则使用两一个对象来查找某个对象。
+
+### 11.3
+
+Collections类和Arrays类提供了许多static方法，方便我们操纵Collection和数组。
+
+Arrays.asList()方法返回的是一个定长list，因此我们不能修改这个list的长度，不能对其调用add，remove方法。另外，书中还推荐像下面一样使用asList()方法：
+
+
+
+```java
+class Snow{}
+class Power extends Snow{}
+class Light extends Power{}
+class Heavy extends Power{}
+class Crusty extends Snow{}
+class Slush extends Snow{}
+public class Test2 {
+	public static void main(String[] args) {
+		//ok
+		List<Snow> snow1 = Arrays.asList(new Power(), new Crusty(), new Slush());
+		
+		//在JDK6会报错,JDK8编译通过
+		List<Snow> snow2 = Arrays.asList(new Light(), new Heavy()); 
+		
+		//ok
+		List<Snow> snow3 = new ArrayList<Snow>();
+		Collections.addAll(snow3, new Light(), new Heavy());
+		
+		//ok，推荐做法
+		List<Snow> snow4 = Arrays.<Snow>asList(new Light(), new Heavy());
+	}
+}
+```
+
+###  11.4 容器的打印
+
+Collection和Map都重写toString()方法，因此可以格式化打印其中的元素。
+
+
+
+### 11.5 List
+
+讲了list的基本API使用。
+
+
+
+### 11.6 迭代器
+
+迭代器的几个重要方法。Iterator的真正威力在于，能够将遍历序列的操作与序列底层的结构分离。正由于此，我们会说，迭代器统一了对容器的访问方式。
+
+* iterator()获取迭代器
+* next()获得下一个元素
+* hasNext()检查序列中是否还有元素
+* remove()将迭代器新近返回的元素删除
+
+ListIterator是Iterator的子类，只能用于List类的遍历，提供了更强大的API方法。
+
+
+
+## 第16章《数组》
+
+这张比较简单，除了多维数组没看，其他都看了
