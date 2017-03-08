@@ -6,8 +6,6 @@
 
 数组本质上也是在堆中分配存储空间（因为使用了new关键字），当数组元素为基本类型时，数组直接存储基本类行数据的值，如果元素为数值型，则自动初始化为0；如果为char类型，则初始化为(char)0；如果为boolean类型，则初始化为false。当数组元素为对象类型时，数组则持有对象的引用，自动初始化为null。数组唯一可以访问的字段/方法就是length，它表示数组的容量，而不是实际保存的元素个数。
 
-
-
 ## API分析
 
 ```java
@@ -41,12 +39,9 @@ static void sort(...)系列方法
 //返回格式化的数组结果：[element0.toString(), element1.toString(), element2.toString()...]
 //如果直接打印数组引用，打印出的其实是数组内存地址
 static String toString(...)系列方法
+  
+//再介绍一个方法
+//该方法用于数组拷贝，如果元素是对象，则执行shadowCopy
+//此外，该方法并不会自动装箱拆箱，因此两个数组必须具有相同的确切的类型
+System.arraycopy(Object src, int srcPos, Object dest, int destPos, int length)
 ```
-
-
-
-
-
-1. asList把数组转为定长List
-2. binarySearch使用二分查找搜索指定元素
-3. ​
