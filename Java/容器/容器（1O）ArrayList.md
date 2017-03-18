@@ -1,0 +1,5 @@
+# 容器（10）ArrayList
+ArrayList继承了AbstractList抽象类，并实现了List接口。ArrayList实现了所有可选操作，并允许把null元素加入到集合中。相较于List接口，ArrayList还提供了一些自身内部使用的方法，用于操纵/扩充内部的数组大小。ArrayList的功能基本等价于Vector，但ArrayList是线程不安全的，而Vector是线程安全的。
+
+ArrayList可以使用Iterator和ListIterator迭代器，ArrayList的这两个迭代器都遵循**fail-fast机制**：当我们获取迭代器之后，如果尝试对ArrayList进行**structually modified**操作，即那些会改变集合size的操作，就会抛出ConcurrentModificationException。
+
