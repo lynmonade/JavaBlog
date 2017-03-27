@@ -148,7 +148,7 @@ int size()
 Object[] toArray()
 ```
 
-**必选操作**，把集合中的元素**深拷贝**到新的数组中，返回值是一个Object[]数组。数组元素的顺序与Iterator遍历的顺序一致。该方法是集合与数组之间的一个桥梁。
+**必选操作**，把集合中的元素**浅拷贝**到新的数组中，返回值是一个Object[]数组。数组元素的顺序与Iterator遍历的顺序一致。该方法是集合与数组之间的一个桥梁。在下一章节分析AbstractCollection源码时，你就会发现，`toArray`方法对元素确实使用的是浅拷贝。
 
 ### <T> T[] toArray(T[] a)
 
@@ -158,10 +158,9 @@ Object[] toArray()
 //一般这么用
 String[] strArray = list.toArray(new String[list.size()]); //line1
 String[] strArray = list.toArray(new String[]{}); //line2
-
 ```
 
-**必选操作**，其作用与`toArray()`一样，把集合中的元素深拷贝到新的数组中。返回值是一个T[]数组（泛型数组）。数组元素的顺序与Iterator遍历的顺序一致。该方法是集合与数组之间的一个桥梁。
+**必选操作**，其作用与`toArray()`一样，把集合中的元素**浅拷贝**到新的数组中。返回值是一个T[]数组（泛型数组）。数组元素的顺序与Iterator遍历的顺序一致。该方法是集合与数组之间的一个桥梁。
 
 注意，该方法可以传入一个泛型数组作为参数，泛型数组参数的目的在于可以指定返回数组的具体类型，这样可以避免强制类型转换。而`toArray()`方法只能返回Object类型的数组。参数一般可以有两种方式：
 
@@ -230,7 +229,7 @@ public abstract class AbstractCollection<E> implements Collection<E> { //直接�
         return false;
     }
 
-    //深拷贝，转为数组
+    //浅拷贝，转为数组
     public Object[] toArray() {
         // Estimate size of array; be prepared to see more or fewer elements
         Object[] r = new Object[size()]; //数组初始化长度为集合长度
@@ -238,12 +237,12 @@ public abstract class AbstractCollection<E> implements Collection<E> { //直接�
         for (int i = 0; i < r.length; i++) {
             if (! it.hasNext()) // fewer elements than expected
                 return Arrays.copyOf(r, i);
-            r[i] = it.next(); //直接赋值，即深拷贝
+            r[i] = it.next(); //数组元素引用引用直接指向集合中的元素，即浅拷贝
         }
         return it.hasNext() ? finishToArray(r, it) : r;
     }
 
-    //深拷贝，转为数组
+    //浅拷贝，转为数组
     public <T> T[] toArray(T[] a) {
         // Estimate size of array; be prepared to see more or fewer elements
         int size = size();
@@ -268,7 +267,7 @@ public abstract class AbstractCollection<E> implements Collection<E> { //直接�
                 }
                 return a;
             }
-            r[i] = (T)it.next(); //深拷贝
+            r[i] = (T)it.next(); //浅拷贝
         }
         // more elements than expected
         return it.hasNext() ? finishToArray(r, it) : r;
@@ -398,6 +397,5 @@ public abstract class AbstractCollection<E> implements Collection<E> { //直接�
         }
     }
 }
-
 ```
 

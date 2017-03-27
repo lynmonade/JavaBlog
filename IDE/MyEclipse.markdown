@@ -1,4 +1,5 @@
 # 安装MyEclipse后你应该做这些设置
+
 安装好MyEclipse后，最好设置一下MyEclipse的全局编码格式，包括项目/文件的编码格式、文件的打开方式、JRE、tomcat内存方法如下：
 
 ```java
@@ -22,7 +23,7 @@ windows--preferences--Java--Installed JREs
 ```
 
 # 如何对JDK源码设置断点debug
-## 第一步：自己编译JDK源码
+
 Sun对rt.jar中的类进行编译时去除了调试信息，因此在eclipse中调试JDK源码时，我们无法看到JDK局部变量的值。因此我们需要自己编译相应的源码使之拥有调试信息。下面就来讲解一下如何自己编译JDK源码：
 
 **第一步：**在任意目录下创建一个文件夹，名为myJDK。比如D:\myJDK\，然后在myJDK下创建一个文件夹名为jdk_src，用于存放oracle提供的jdk源码；接着再在myJDK下创建一个文件夹名为jdk_debug，用于输出编译结果。
@@ -57,8 +58,6 @@ jar cf0 rt_debug.jar *
 
 ![jdk_debug](http://wx1.sinaimg.cn/mw690/0065Y1avgy1fdre6lp1urj30f60hpmxo.jpg)
 
-
-
 # Reference
+
 * [如何在eclipse中debug调试进入JDK源码及显示调试过程中的局部变量的值](http://blog.csdn.net/ftp_2014/article/details/51087603)
-* 
