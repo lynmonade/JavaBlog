@@ -1,0 +1,3 @@
+# JFinal启动过程分析
+
+JFinal通过Filter来启动，因此需要在web.xml中配置一个Filter，在tomcat启动加载web.xml时，便会载入Filter。在Filter中我们配置了一个启动参数。通过启动参数加载我们自定义的ProjcetConfig，ProjectConfig继承自JFinalConfig抽象类，开发人员可以在ProjectConfig中进行配置，tomcat在载入Filter时便会加载在JFinalConfig中配置的信息。

@@ -1,4 +1,5 @@
-#servlet映射
+# servlet映射
+
 创建web project名为test。创建一个servlet名为MyServlet。myEclipse会自动生成web.xml的servlet配置信息：
 
 ```XML
@@ -15,17 +16,22 @@
 
 部署到tomcat中，访问http://localhost:8080/test/print就可以访问到MyServlet了。
 
-#web.xml标签介绍
-#### \<servlet-name>
-serlvet的id，xml全局唯一。
+# web.xml标签介绍
 
-#### \<servlet-class> 
-对应Servlet类，必须使用全路径。
+**<servlet-name>**
 
-#### \<url-pattern>
-表示ProjectPath之后跟着的路由地址:http://localhost:8080/projectpath/xxx。\<url-pattern>还可以使用\*号路径格式，例如\*.do, /action/*.do
+serlvet的id，xml全局唯一
 
-####\<load-on-startup>
+**<servlet-class>**
+
+对应Servlet类，必须使用全路径
+
+**<url-pattern>**
+
+表示ProjectPath之后跟着的路由地址:http://localhost:8080/projectpath/xxx。\<url-pattern>还可以使用\*号通配符，例如\*.do, /action/*.do
+
+**<load-on-startup>**
+
 表示是否在启动的时候就加载这个servlet(实例化并调用其init()方法)：
 
 * 它的值必须是一个整数，表示servlet应该被载入的顺序
@@ -43,7 +49,8 @@ serlvet的id，xml全局唯一。
 </servlet>
 ```
 
-####\<init-param>
+**<init-param>**
+
 该标签可以在servlet初始化时，传入参数。并在servlet端获取参数值。
 
 ```xml
@@ -56,7 +63,8 @@ serlvet的id，xml全局唯一。
 this.getServletConfig().getInitParameter("debug");
 ```
 
-####\<welcome-file-list>
+**<welcome-file-list>**
+
 该标签用于设置项目默认访问路径，即访问http://localhost:8080/projectpath时跳转到的页面。这个标签中不能使用servlet作为跳转路径。
 
 ```xml
@@ -65,7 +73,8 @@ this.getServletConfig().getInitParameter("debug");
 </welcome-file-list>
 ```
 
-#缺省Servlet
+# 缺省Servlet
+
 在<%TOMCAT_HOME%>\conf\web.xml中，有一个servlet名为default。
 
 ```xml
@@ -111,7 +120,7 @@ web容器 = servlet引擎 + serlvet容器
 ##ServletContext
 即web项目的对象表示。ServletConfig持有ServletContext对象的引用。
 
-##HttpServletRequest,HttpServletResponse
+##HttpServletRequest和HttpServletResponse
 这两个都是接口，具体实现类由servlet引擎厂家提供，比如tomcat，这些厂家必须严格遵循接口的入参、出参、方法名。servlet只需要使用接口引用来操作request、response即可。
 
 #Servlet接口
@@ -188,7 +197,7 @@ public void doGet(HttpServletRequest request, HttpServletResponse response) thro
     //刻意制造一个异常
 	try{
 		int x =3/0;
-	}
+    }
 	catch(Exception e) {
 		log("int x=3/0, exception happened");
 	}
@@ -251,9 +260,15 @@ for(Object obj : set) {
 */
 ```
 
-注意，这里得到的路径都是tomcat/webapp/下的prject路径形式，而不是workspace下的路径形式。
+注意，这里得到的路径都是tomcat/webapp/下的prject路径形式，而不是workspace下的路径形式。当然，其实两者之间是有映射关系的，是可以对应起来的。两者的路径格式非常类似：你可以观察一下，`%TOMCAT_HOME%/webapps/myproject/`目录与`myeclipse_workspace/myproject/WebRoot/`目录中的内容是一样的，为什么呢？可以在eclipse中查看项目的properties-->Deployment Assembly信息，左边的Source栏表示eclipse workspace下的项目源码，Deploy path表示部署到tomcat中的项目：
 
-其实两者的路径格式也非常类似：你可以观察一下，`%TOMCAT_HOME%/webapp/myproject/`目录与`myeclipse_workspace/myproject/WebRoot/`目录中的内容是一样的。
+* 工作空间项目中的WebRoot目录对应`%TOMCAT_HOME%/webapps/myproject`目录，即第二行`/WebRoot`对应`/`。
+* 工作空间项目中的src目录对应`%TOMCAT_HOME%/webapps/myproject/WEB-INF/classes`目录。
+* 工作空间项目中的第三方lib我们一般放在`WEB-INF/lib`下面，发布到tomcat后，也是放在`WEB-INF/lib`下面。
+
+![映射关系](http://wx2.sinaimg.cn/mw690/0065Y1avgy1fefbz2yoc9j30rn068aac.jpg)
+
+
 
 ###getResource方法
 
@@ -360,7 +375,7 @@ addDateHeader(String name, long date);
 setDateHeader(String name, long date);
 
 //例子
-//2秒后自动刷新
+//2秒后自动刷新当前页面，或者访问另一页面
 response.setHeader("Refresh", "2");
 
 //2秒后跳转至其他页面
@@ -442,7 +457,7 @@ out.close();
 servlet程序输出的HTTP消息的响应正文不是直接发送到客户端，而是首先被写入到了servlet引擎提供的一个输出缓冲区中，这个缓冲区就像一个临时的蓄水池，直接输出缓冲区被填满或者servlet程序已经写入了所有的响应内容，缓冲区中的内容才会被servlet引擎发送到客户端。使用输出缓冲区后，servlet引擎就可以将响应状态行、各响应头和响应正文严格按照HTTP消息的位置顺序进行调整后再输出到客户端，特别是可以自动对Content-Length头字段进行设置和调整。
 
 #### 设置缓冲区大小
-我们可以通过`esponse.setBufferSize();`方法设置缓冲区大小，实际的缓冲区空间不会小于你设置的值。当我们设置的缓冲区空间小于8192时（比如0,甚至负数），web容器会自动设置缓冲区空间为8192。这主要是为了提高空间资源利用率。
+我们可以通过`response.setBufferSize();`方法设置缓冲区大小，实际的缓冲区空间不会小于你设置的值。当我们设置的缓冲区空间小于8192时（比如0,甚至负数），web容器会自动设置缓冲区空间为8192。这主要是为了提高空间资源利用率。
 
 #### 响应内容大小
 当我们将数据返回至客户端时，数据会先进入缓冲区。如果缓冲区的可用空间足够容纳我们的返回数据，则servlet引擎将计算响应正文部分的大小并自动设置content-length头字段。
@@ -572,7 +587,7 @@ request.getParameter("p1"); //成功获取aaa
 
 
 ### 包含RequestDispatcher.include();
-include()用于将requestDispatcher对象封装的资源内容作为当前想ing内容的一部分包含进来。被包含的servlet程序不能改变响应消息的状态码和响应头，如果它里面存在这样的语句，这些语句的执行结果将被忽略。
+include()用于将requestDispatcher对象封装的资源内容作为当前响应内容的一部分包含进来。被包含的servlet程序不能改变响应消息的状态码和响应头，如果它里面存在这样的语句，这些语句的执行结果将被忽略。
 
 **包含一个servlet**
 
@@ -599,7 +614,7 @@ public void doGet(HttpServletRequest request, HttpServletResponse response)
 	out.println("中国"+ "<br>");
 	out.println("URI:"+request.getRequestURL() + "<br>"); //最初的request请求地址
 	out.println("queryString:" + request.getQueryString() + "<br>"); //因为最初的request没有传参数，所以为null
-	out.println("parameter p1:" + request.getParameter("p1") + "<br>"); //中文参数乱码
+	out.println("parameter p1:" + request.getParameter("p1") + "<br>"); //中文参数编码格式由Including.java中设置的编码格式确定
 }
 
 //访问URL：http://localhost:8080/response/IncludingServlet
@@ -735,9 +750,9 @@ protected void service(HttpServletRequest request, HttpServletResponse response)
 
 # HTTP协议详解
 ## HTTP1.0与HTTP1.1比较
-对于HTTP1.0，浏览器访问一个包含有许多图像的网页文件的整个过程需要多次请求和响应。每次请求和响应都需要建立一个单独的连接，每次连接只是传输一个文档和图像，上一次和下一次请求完全分离，这就导致浏览器哟啊获得一个包含许多图像的网页文件时需要与Web服务器建立多次连接。即使图像文件很小，单客户端和服务器端每次建立和关闭连接也是一个费时的过程，会验证影响客户和服务器的性能。
+对于HTTP1.0，浏览器访问一个包含有许多图像的网页文件的整个过程需要多次请求和响应。每次请求和响应都需要建立一个单独的连接，每次连接只是传输一个文档和图像，上一次和下一次请求完全分离，这就导致浏览器获得一个包含许多图像的网页文件时需要与Web服务器建立多次连接。即使图像文件很小，单客户端和服务器端每次建立和关闭连接也是一个费时的过程，会验证影响客户和服务器的性能。
 
-为了克服HTTP1.0的缺陷，HTTP1.1支持持久连接，在一个TCP连接上可以传送多个HTTP请求和响应，减少了建立和关闭连接的小号和延迟。一个包含许多图像的网页文件的多个请求和应答可以在一个连接中传输，但每个单独的网页文件的请求和应答仍然需要使用各自的连接。HTTP1.1还允许客户端不用等待上一次请求结果返回，就可以发出下一次请求，但服务器端必须按照接收到客户端请求的先后顺序依次回送响应结果，以保证客户端能够区分出每次请求的响应内容。
+为了克服HTTP1.0的缺陷，HTTP1.1支持持久连接，在一个TCP连接上可以传送多个HTTP请求和响应，减少了建立和关闭连接的消耗和延迟。一个包含许多图像的网页文件的多个请求和应答可以在一个连接中传输，但每个单独的网页文件的请求和应答仍然需要使用各自的连接。HTTP1.1还允许客户端不用等待上一次请求结果返回，就可以发出下一次请求，但服务器端必须按照接收到客户端请求的先后顺序依次回送响应结果，以保证客户端能够区分出每次请求的响应内容。
 
 ##请求消息：
 一个完整的请求消息包括：一个请求行、若干消息头、以及实体内容。其中的一些消息头和实体内容都是可选的，消息头和实体内容之间要用空行隔开。
@@ -830,7 +845,7 @@ GET方式传递参数时，参数拼接在请求行的URL地址后面。而POST�
 在HTTP消息中，也可以使用一些在HTTP1.1正式规范里没有定义的头字段，这些头字段统称为自定义的HTTP头或者扩展头，它们通常被当做是一种实体头处理。现在流行的浏览器实际上都支持Cookie、Set-Cookie、Refresh和Content-Disposition等几个常用的扩展头字段。
 
 
-# 第七章 回话与状态管理
+# 第七章 会话话与状态管理
 
 ## Cookie常用方法
 

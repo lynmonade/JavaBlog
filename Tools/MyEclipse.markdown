@@ -58,6 +58,17 @@ jar cf0 rt_debug.jar *
 
 ![jdk_debug](http://wx1.sinaimg.cn/mw690/0065Y1avgy1fdre6lp1urj30f60hpmxo.jpg)
 
+# Eclipse快捷键
+
+* 快速打开资源：CTRL+SHIFT+R
+* 查看类的继承关系：CTRL+T
+* Debug
+  * step into: F5
+  * step over: F6
+  * step return(step out): F7
+  * resume: F8
+  * terminate(拔电源): CTRL+F2 
+
 # Reference
 
 * [如何在eclipse中debug调试进入JDK源码及显示调试过程中的局部变量的值](http://blog.csdn.net/ftp_2014/article/details/51087603)

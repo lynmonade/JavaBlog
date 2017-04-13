@@ -69,6 +69,8 @@ public final class FileDescriptor {
         desc.handle = set(fd);
         return desc;
     }
+    
+    private static native long set(int d);
 }
 ```
 
