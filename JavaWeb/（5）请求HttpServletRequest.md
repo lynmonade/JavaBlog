@@ -59,11 +59,7 @@ Cache-Control: no-cache
 username=%E8%BF%99%E4%B8%AA&submit=%E6%8F%90%E4%BA%A4%E6%9F%A5%E8%AF%A2%E5%86%85%E5%AE%B9
 ```
 
-### 科普：URL编码
 
-> RFC3986文档规定，Url中只允许包含英文字母（a-zA-Z）、数字（0-9）、-_.~4个特殊字符以及所有保留字符。
-
-URL编码其实是字符集编码的百分号表示形式，用以适应URL地址的格式。**在使用URL编码时，必须指定编码格式。**比如**中国**二字，使用UTF-8编码后的值用十六进制表示为：`e4b8ade59bbd`，其中e4, b8, ad, e5, 9b, bd分别表示一个字节。UTF-8使用三个字节表示常见的中文字，因此中国二字需要六个字节来表示。**URL编码就是在字符集编码之后，在每个字节前后加上%的形式：即%e4%b8%ad%e5%9b%bd**。
 
 ### 例子：从表单常用控件中获取普通数据
 
@@ -188,7 +184,7 @@ function checkPost() {
 
 HttpServletRequest类定义了一系列getParameter方法，用于获取`application/x-www-form-urlencoded`格式的参数值（包括GET和POST方式）。这些方法会对参数进行分解和提取，并自动对提取的参数进行URL解码。
 
-```
+```java
 //获取不同名参数，如果参数没有值，则返回空字符串
 String getParameter(String name)
 //获取同名参数
@@ -287,6 +283,91 @@ Base64编码可以将任意一组字节转换为较长的常见文本字符序�
 
 **Base64最重要的用途就是把二进制数据编码为ASCII格式的文本，这样便可以放到HTTP请求和响应中进行传输。**
 
+## 请求参数的中文读取问题
+
+### 科普：URL编码
+
+> RFC3986文档规定，Url中只允许包含英文字母（a-zA-Z）、数字（0-9）、-_.~4个特殊字符以及所有保留字符。
+
+HTTP协议规定浏览器向Web服务器传递的参数信息中不能出现某些特殊字符，而必须对这些字符进行URL编码后再传送，Web服务端接收到客户端传的整个参数信息后，首先从中分离出每个参数的名称和值部分，接着对单个的名称和值部分进行URL解码。
+
+URL编码其实是字符集编码的百分号表示形式，用以适应URL地址的格式。**在使用URL编码时，必须指定编码格式。**比如**中国**二字，使用UTF-8编码后的值用十六进制表示为：`e4b8ade59bbd`，其中e4, b8, ad, e5, 9b, bd分别表示一个字节。UTF-8使用三个字节表示常见的中文字，因此中国二字需要六个字节来表示。
+
+**URL编码本质上是字符集编码基础之上，在每个字节前后加上%的形式：即%e4%b8%ad%e5%9b%bd**。
+
+### 浏览器对表单的中文参数进行URL编码
+
+**表单中可以使用GET和POST两种方式提交参数。无论使用哪种方式，浏览器都会自动对中文参数进行字符集编码处理。**既然涉及到字符集编码，就得明确知道使用哪一种字符集编码格式。下面说明了浏览器如何选择字符集编码格式：
+
+1. 如果用户手动强制设定了浏览器的编码格式，比如chrome中：设置-->工具-->编码-->选择编码格式。则使用该编码格式进行编码。
+2. 如果没有强制设定，则使用当前页面所用的编码格式对中文参数进行编码。一般通过`<meta>`属性设置：
+
+```html
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+```
+
+### 其他URL形式中的中文参数问题
+
+对于超链接、请求转发、重定向来说，如果开发者自行拼接中文参数，则开发者必须自行对URL后面拼接的参数进行URL编码。因为此时浏览器事不帮我们进行URL编码的。
+
+### 在后端获取中文参数
+
+后端可以通过getParameter系列方法获取参数。由于前端传过来的参数是经过了编码处理的，因此开发者在调用getParameter系列方法之前，心里必须非常清楚当前所使用的解码格式（该解码格式需要与当初浏览器对参数进行编码的字符集编码一致）一般来说Servlet引擎(tomcat)都会提供默认的解码格式，如果不符合你的需求，则需要自己手工指定解码格式。后端解码格式的选择规则如下：
+
+**GET请求：**GET请求中的参数拼接在URL地址后面，getParameter系列方法进行URL解码时所采用的的字符集编码在Servlet规范中没有明确规定，它由各个Servlet引擎厂商自行决定。Tomcat默认采用ISO8859-1字符集编码。如果希望修改tomcat对GET请求参数（URL参数）的编码格式，则可以在`%TOMCAT_HOME%/conf/server.xml`中显式地设置：
+
+```xml
+<!--URIEncoding只对GET请求参数的解码有效，对POST请求无效-->
+<Connector connectionTimeout="20000" port="8080" protocol="HTTP/1.1" redirectPort="8443" URIEncoding="UTF-8"/>
+```
+
+**POST请求：**对于POST方式下的`application/x-www-form-urlencoded`格式的请求实体内容，getParameter系列方法以`request.getCharacterEncoding()`方法返回的字符集编码对其进行解码。一般来说，form表单提交的POST请求并没有通过任何方式指定实体内容的编码格式，因此后端也无法得知请求消息实体内容的字符集编码，这一点可以通过`request.getCharacterEncoding()`方法的返回值为null来验证。此时，tomcat默认使用ISO8859-1进行解码。**注意，tomcat并不会参照URIEncoding的设置对POST提交的参数进行解码**。
+
+**唯一的办法是调用`request.setCharacterEncoding(String name)`方法，显式地指定POST方式提交参数的解码格式**。该方法设置的字符集编码，既可以作用于POST方式在`application/x-www-form-urlencoded`格式下提交的参数，也作用于POST方式在`multipart/form-data`格式下，后端使用`BufferedReader getReader()`读取实体内容（即指定字符流的编码格式）。
+
+```java
+protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+	request.setCharacterEncoding("UTF-8");
+	String username = request.getParameter("username");
+}
+```
+
+### tomcat的设置
+
+tomcat有两个设置，一个是前面提到的URIEncoding，它用来设置对GET请求参数的解码格式。另一个是useBodyEncodingForURI，当设置为true时，表示使用请求消息实体内容的编码格式来对GET请求参数进行解码。也就是说，`setCharacterEncoding()`也能作用于GET请求。
+
+```xml
+<Connector connectionTimeout="20000" port="8080" protocol="HTTP/1.1" redirectPort="8443" URIEncoding="UTF-8" useBodyEncodingForURI="true"/>
+```
+
+### CharacterEncoding方法小结
+
+```java
+String getCharacterEncoding()
+void setCharacterEncoding(String env)
+```
+
+`getCharacterEncoding()`用于获取请求消息实体内容的字符集编码名称，多数情况下在请求到来时，请求消息头中并没有设置CharacterEncoding，因此返回null。
+
+`setCharacterEncoding(String env)`用于设置请求消息实体内容中的解码格式，这个解码格式可用于POST方式在`application/x-www-form-urlencoded`格式下提交的参数，也可用于POST方式在`multipart/form-data`格式下，后端使用Reader来读取实体内容（设置字符流的编码格式）。因此`setCharacterEncoding(String env)`必须在`getParameter()`或`getReader()`之前调用。
+
+当调用了`setCharacterEncoding(String env)`后，就能使用`getCharacterEncoding()`来获取消息实体内容的字符集编码。
+
+## 使用Request请求域传递信息
+
+```java
+void setAttribute(String name, Object o)
+Object getAttribute(String name)
+void removeAttribute(String name)
+Enumeration getAttributeNames()
+```
+
+使用`setAttribute(String name, Object o)`时，如果已经存在指定名称的属性，则旧的属性值会被覆盖。如果传递的属性值为null，则删除指定名称的属性，效果相当于`removeAttribute(String name)`。
+
+在MVC模式中，Model是可作为JavaBean使用的业务对象，它包含业务的状态数据和完成业务逻辑的方法。View负责创建显示界面，比如JSP。Controller是一个接收用户请求的Servlet，它根据请求创建对应的JavaBean，并调用JavaBean的业务方法，最后通过`RequestDispatcher.forward()`方法将请求转发给JSP页面，同时还会将model/JavaBean作为请求域数据传递过去，而JSP页面再从请求域中检索出Model对象。
+
+尽管通过在URL地址后面附加参数的方式也可以在两个Servlet之间传递信息，但它只能传递简单的字符文本信息，不能像请求域属性一样传递复杂的对象。
+
 ## 获取请求头信息（没啥大用）
 
 浏览器在发送请求时，会自动创建许多请求头，并放到request请求中，我们在后端可以查看这些请求头信息。
@@ -310,7 +391,12 @@ int getIntHeader(String name);
 long getDateHeader(String name);
 String getContentType();
 String getContentLength();//获取实体内容的长度
-String getCharacterEncoding(); //获取字符流所用的编码格式，有setCharacterEncoding()方法决定
+```
+
+`getContentType()`用于获取请求头中的contentType信息，HTML页面一般通过下面的语句设置contentType：
+
+```html
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
 ```
 
 **请求头的应用例子：利用Referer请求头阻止盗链**
@@ -344,8 +430,6 @@ protected void service(HttpServletRequest request, HttpServletResponse response)
 如果打开`http://localhost:8080/newproject/test.html`，并点击超链接，这就是正常的访问效果。用工具查看也可发现，请求信息中包含请求头：`Referer:http://localhost:8080/newservlet/test.html`。如果你直接在浏览器地址栏中访问`http://localhost:8080/newservlet/ServletA`，则是非法盗链，因为此时请求头中并不包含Referer头信息。
 
 **不要太相信请求头，很多时候请求头是可以伪造的。**
-
-## 利用Request域传递数据
 
 ## 获取请求URL地址信息（没啥大用）
 
