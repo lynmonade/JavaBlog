@@ -1,6 +1,6 @@
 #实验
 ## 实验准备
-实验环境：MyEclipse2015+tomcat6+JDK6+Chrome+firefox。
+实验环境：MyEclipse2015+tomcat6+JDK6+Chrome。
 
 实验目的：观察session的创建、session的传递、session的销毁、session在tomcat内存中的存活状态。
 
@@ -74,7 +74,7 @@ tomcat里共有0个活动的session
 #### 1.2 接着，在chrome中获取session
 ```
 后端生成sessionID=4003C36DDAD53621BD45A45CD96835F7
-这是新的ID 
+这是新的ID
 ```
 ![2. 接着，在chrome中获取session](http://ww3.sinaimg.cn/mw690/0065Y1avgw1fb545ttqghj30oa07jab5.jpg)
 
@@ -104,7 +104,9 @@ tomcat里共有1个活动的session
 tomcat里共有1个活动的session 
 第1个sessionID=4003C36DDAD53621BD45A45CD96835F7
 ```
-这表明即使关闭浏览器，tomcat内存中的session依然存在。（直到既定的销毁时间后才会自动销毁）
+这表明即使关闭浏览器，tomcat内存中的session依然存在。
+
+**因此，系统一般会提供退出按钮，在点击退出时，同时删除服务端的SESSION，最大限度的节约服务端资源，不然的话，Session就只能等到既定的销毁时间才自动销毁。**
 
 #### 2.2 在chrome中获取session
 ```
@@ -123,7 +125,7 @@ tomcat里共有1个活动的session
 tomcat里共有2个活动的session 
 第1个sessionID=6D0DB2024031109E97884F1CE6A74DFB
 第3个sessionID=4003C36DDAD53621BD45A45CD96835F7
-``` 
+```
 
 #### 2.4 再次获取session
 ```
