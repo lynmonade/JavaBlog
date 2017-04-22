@@ -198,9 +198,195 @@ protected void doGet(HttpServletRequest request, HttpServletResponse response) t
 	}
 }
 ```
-## Session的跟踪机制
+## 使用Base64编码解决Cookie中文问题
+
+如果你希望往Cookie中使用中文，则必须在服务端先对Cookie使用Base64编码，然后放入响应消息头中。同样地，当你在服务端获取客户端传过来的中文Cookie时，也要进行Base64解码才能读取Cookie的内容。
+
+```java
+protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+	response.setContentType("text/html;charset=utf-8");
+	PrintWriter out = response.getWriter();
+	Calendar cal = Calendar.getInstance();
+	SimpleDateFormat format = new SimpleDateFormat("yyyy年MM月dd日 HH时mm分ss秒");
+	String formatTime = format.format(cal.getTime());
+	
+	//Apache Common Codec
+	BCodec base64Coder = new BCodec("UTF-8");
+	try {
+		formatTime = base64Coder.encode(formatTime); //base64编码
+	} catch (EncoderException e1) {
+		e1.printStackTrace();
+	}
+	Cookie ck = new Cookie("time", formatTime);
+	response.addCookie(ck);
+	
+	Cookie[] cks = request.getCookies();
+	if(cks==null) {
+		out.println("Cookie中没有存储最新时间");
+		return;
+	}
+	for(int i=0; i<cks.length; i++) {
+		Cookie cookie = cks[i];
+		if(cookie.getName().equals("time")) {
+			String value = cookie.getValue();
+			try {
+				String time = base64Coder.decode(value); //base64解码
+				out.print("现在的时间是："+time);
+			} catch (DecoderException e) {
+				e.printStackTrace();
+			}
+		}
+	}
+}
+```
+
+![](http://wx1.sinaimg.cn/mw690/0065Y1avgy1fevn4yz5b3j30pl0anaar.jpg)
+
+## 利用Cookie实现Session跟踪
+
+使用Cookie后没我们可以实现将上一次请求的状态信息传递到下一次请求中。但如果传递的信息过多，这回降低网络传输效率，并且每个站点的Cookie大小和数量均由限制。**解决方案就是：引入Session跟踪机制**。
+
+**在系统设计时，系统U需要限定一个会话只能从某个Servlet中开始，而不能从其他Servlet开始。例如：Web站点要求只有用户登录成功后才能真正开启与客户端的会话过程。**首先，用户只能先访问LoginServlet，LoginServlet中将使用`request.getSession()`来为本次请求创建一个HttpSession对象，并把一些基础信息保存在Session域中，然后自动把SessionID回传给给浏览器。接着浏览器发起另一个请求访问OrderServlet，同时把SessionID放入到请求头中。服务端把传入的SessionID与服务端存储的SessionID进行对比，以判断该请求是否在会话中。
+
+**这样做的好处是：客户端只需持有一个SessionID，而其他的基础信息保存在后端的Session域中。后端只需功过SessionID就可以区分不同的会话请求。**
+
+![](http://wx3.sinaimg.cn/mw690/0065Y1avgy1feu2dfna0ej30pz0d6jvx.jpg)
+
+
+
+## 利用URL重写实现Session跟踪
+
+这个用的比较少，因为现在浏览器一般都默认开启Cookie的，但还是有必要学习一下。当客户端关闭Cookie机制后，服务端依然可以通过Set-Cookie响应头消息头把JSESSIONID传递给客户端，但客户端无法通过请求消息头把JSESSIONID传递给服务端。这时我们就需要利用URL重写，把JSESSIONID拼接到URL后面。URL重写涉及两个方法：
+
+```java
+//用于对超链接和form表单的action属性中设置的URL进行重写
+String encodeURL(String url)
+//用于对要传递给response.sendRedirect方法的URL进行重写
+String encodeRedirectURL(String url)
+```
+
+**例子**
+
+```java
+protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+	response.setContentType("text/html;charset=utf-8");
+	PrintWriter out = response.getWriter();
+	Cookie ckPhone = new Cookie("phone", "139");
+	Cookie ckEmail = new Cookie("email", "lyn@hotmail.com");
+	response.addCookie(ckPhone);
+	response.addCookie(ckEmail);
+	HttpSession session = request.getSession();
+	
+	out.println("<html>");
+	out.println("<body>");
+	out.println("<a href='" + 
+			response.encodeURL("ServletE") + 
+			"'>访问SerlvetE</a>");
+	out.println("</body>");
+	out.println("</html>");
+}
+```
+
+**第一步：访问ServletD，普通Cookie和JSESSIONID正常的写入到响应头中。**
+
+![](http://wx1.sinaimg.cn/mw690/0065Y1avgy1fevhj629ywj30pa0axaap.jpg)
+
+**第二步：通过超链接访问ServletE，JSESSIONID拼接到URL后面，并且无法再传递普通Cookie。**
+
+![](http://wx1.sinaimg.cn/mw690/0065Y1avgy1fevhj5blw8j30ot0aejrx.jpg)
 
 ## Session生命周期：创建
 
+服务端会在下列两种情况下创建Session对象：
+
+1. 请求消息头中不包含SessionID，这种情况一般发生在某个客户端浏览器首次访问某个能开启会话功能的Servlet时，例如LoginServlet
+2. 请求的请求头或者URL中包含SessionID，但该SessionID与后端存储的SessionID不匹配。这种情况发生在浏览器超时后再次访问服务端。
+
+创建Session的方法有两个：
+
+```java
+HttpSession getSession()
+HttpSession getSession(boolean create)
+```
+
+第一个方法表示：如果传入的sessionID与后端存储的sessionID不匹配，则创建一个新的Session对象，并把sessionID放入到Cookie中回传给浏览器。如果匹配，则直接返回匹配的Session对象。该方法一般用于LoginServlet这样的会话入口。
+
+第二个方法表示：当参数为true时，则其效果与第一个方法相同。当反诉为false时，如果sessionID不匹配，则返回null，并不会创建新的Session对象。如果匹配，则返回匹配的Session对象。该方法一般用于非会话入口的Servlet。
+
 ## Session生命周期：销毁
 
+当用户关闭浏览器后，服务端的Session对象并不会被销毁，因为服务端根本无法检测到客户端浏览器是否关闭。Session对象只能在下面两种情况下被销毁：
+
+1. 从客户端最后一次发送请求的时间后，如果超过了服务端所配置的超时时间，则服务端自动销毁该Session对象。
+2. 在服务端显式地调用`session.invalidate();`，强制销毁该session。
+
+**超时时间配置**
+
+超时时间可以在`%TOMCAT_HOME/conf/web.xml%`中配置，此时对tomcat下所有的web项目都起作用。也可以在web项目下的web.xml中单独配置，此时该配置会覆盖tomcat的全局配置，仅应用于该web项目。
+
+```xml
+<session-config>
+	<session-timeout>30</session-timeout>
+</session-config>
+```
+
+此外，我们也可以单独对某一个Session设置他的超时时间（从最后一次请求开始计算）。
+
+```java
+//单位是秒，如果参数是负数，则表示session永远不会被超时销毁
+void setMaxInactiveInterval(int interval)
+int getMaxInactiveInterval()
+```
+
+
+
+## Session生命周期：查看状态
+
+```java
+//HttpSession
+String getId(); //获取sessionID
+long getCreationTime(); //获取session创建时间
+long getLastAccessedTime(); //获取客户端在回话中，最后一次发送请求的时间
+boolean isNew(); //判断session是否是刚刚新创建的
+
+//HttpServletRequest
+boolean isRequestedSessionIdValid(); //判断请求消息中的sessionID是否能匹配后端存储的某个Session
+String getRequestedSessionId(); //获取请求消息中的sessionID
+boolean isRequestedSessionIdFromCookie(); //判断请求中的sessionID是否来自于请求消息头中的cookie
+boolean isRequestedSessionIdFromURL(); //判断请求中的sessionID是否来自于请求消息的URL中
+
+
+```
+
+## Session域存储
+
+前面说到，为了减少Cookie的传输数量，因此可以把一些基本信息存储在Session域中。来自同一客户端的一组访问才能共享同一个Session对象，即只在同一会话中有效。
+
+```java
+//不存在属性则创建，存在则替换，如果value为null，则等价于删除属性
+void setAttribute(String name, Object value)
+//获取属性
+Object getAttribute(String name)
+Enumeration getAttributeNames()
+//删除属性
+void removeAttribute(String name)
+```
+
+## Session的持久化管理
+
+**Session持久化：**Session对象创建后，会保存在tomcat内存中。为了提高内存利用率，我们通常会将暂时不活动但又未超时的session对象转移到文件系统或数据库中存储，一旦服务端需要使用它们，再将它们从文件系统或数据库中装载进内存。
+
+当把Session对象保存到文件系统或数据库中时，需要采用序列化的方式将Session对象中的每个属性对象保存到文件系统或数据库中。当把Session对象从文件系统或数据库中装载进内存时，需要采用反序列化。因此存储在Session对象中的每个属性对象都必须是实现了Serializable接口的对象。
+
+**Tomcat中的Session持久化管理**
+
+当在服务端创建Session后，Session便保存在tomcat的内存中。此时如果tomcat正常的关闭，则在关闭之前，tomcat会把内存中的Session对象进行序列化，并保存在`%TOMCAT_HOME%/work/Catalina/%主机名%/PROJECT_NAME/SESSIONS.ser`文件中。当tomcat重新启动后，会对SESSIONS.ser进行反序列化，得到session对象，并载入到tomcat内存中。浏览器就可以继续进行之前的会话了。
+
+Tomcat提供了两个类来实现Session的持久化管理：
+
+```java
+org.apache.catalina.session.StandardManager
+org.apache.catalina.session.PersistentManager
+```
+
+StandardManager类便实现了把session对象序列化到SESSIONS.ser、反序列化SESSIONS.ser得到session对象的功能。PersisentManager
