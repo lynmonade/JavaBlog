@@ -389,4 +389,6 @@ org.apache.catalina.session.StandardManager
 org.apache.catalina.session.PersistentManager
 ```
 
-StandardManager类便实现了把session对象序列化到SESSIONS.ser、反序列化SESSIONS.ser得到session对象的功能。PersisentManager
+StandardManager类便实现了把session对象序列化到SESSIONS.ser、反序列化SESSIONS.ser得到session对象的功能。它也是tomcat默认使用的Session持久化机制。
+
+PersisentManager提供了比StandardManager更为灵活的Session管理功能，只要某个设备提供了实现`org.apache.caalina.Store`接口的驱动类，PersistentManager就可以将HttpSession对象保存到该设备。tomcat提供了将HttpSession对象保存到文件系统和数据库的Store接口实现类。
