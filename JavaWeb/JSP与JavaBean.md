@@ -76,11 +76,148 @@ JSP本质上来说就是Servlet，因此也遵循<servlet-mapping>的原则。JS
 </servlet-mapping>
 ```
 
-也就是说，在访问jsp页面时，请求交由JspServlet进行处理，它就是tomcat中的JSP引擎。当JSP页面第一次被访问时，JSP引擎将它翻译成一个Servlet类，接着再把Servlet类编译成class文件，然后再由Web容器像调用普通Servlet程序一样的方式来装在和解释执行这个由JSP页面翻译成的Servlet类。如果在翻译或编译过程中出现语法错误，则JSP引擎将中断翻译或编译过程，并将错误信息发送给客户端。翻译产生的Servlet类和编译产生的class文件放在`%TOMCAT_HOME%\work\Catalina\localhost\encode\org\apache\jsp\`目录下。
+在访问jsp页面时，请求交由JspServlet进行处理，它就是tomcat中的JSP引擎。当JSP页面第一次被访问时，JSP引擎将它翻译成一个Servlet类，接着再把Servlet类编译成class文件，然后再由Web容器像调用普通Servlet程序一样来装载和解释执行这个由JSP页面翻译成的Servlet类。如果在翻译或编译过程中出现语法错误，则JSP引擎将中断翻译或编译过程，并将错误信息发送给客户端。翻译产生的Servlet类和编译产生的class文件放在`%TOMCAT_HOME%\work\Catalina\localhost\%PROJECT_NAME%\org\apache\jsp\`目录下。
 
-JSP页面只有在第一次被访问时才需要被翻译成Servlet类。对于该JSP的后续访问，Web容器将直接调用其翻译好的Servlet类。JSP每次被访问时，JSP引擎默认都会检测该JSP文件的和class文件的修改时间，如果JSP字上次编译后又发生了修改，则JSP引擎将重新翻译该JSP文件。
+JSP页面只有在第一次被访问时才需要被翻译成Servlet类。对于该JSP的后续访问，Web容器将直接调用其翻译好的Servlet类。JSP每次被访问时，JSP引擎默认都会检测该JSP文件的和class文件的修改时间，如果JSP上次编译后又发生了修改，则JSP引擎将重新翻译该JSP文件。
 
 ### 分析JSP所生成的Servlet代码
+
+这是home.jsp文件的源码：
+
+```jsp
+<%@ page language="java" contentType="text/html; charset=utf-8"
+    pageEncoding="utf-8"%>
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<title>Insert title here</title>
+</head>
+<body>
+<!-- JSP声明 -->
+<%!
+String objectVar = "成员变量";
+public String objectMethod() {
+	return "实例方法";
+}
+%>
+
+<!--JSP脚本元素-->
+<%
+String url = request.getProtocol();
+System.out.println(application.getRealPath("/"));
+%>
+
+<!--JSP表达式-->
+<%=objectMethod() %>
+<input type="text" value=<%=objectVar%> />
+</body>
+</html>
+```
+
+经过web引擎翻译后，.jsp文件被翻译成.java文件：
+
+```java
+package org.apache.jsp;
+
+import javax.servlet.*;
+import javax.servlet.http.*;
+import javax.servlet.jsp.*;
+
+public final class home_jsp extends org.apache.jasper.runtime.HttpJspBase
+    implements org.apache.jasper.runtime.JspSourceDependent {
+
+
+String objectVar = "成员变量";
+public String objectMethod() {
+	return "实例方法";
+}
+
+  private static final JspFactory _jspxFactory = JspFactory.getDefaultFactory();
+
+  private static java.util.List _jspx_dependants;
+
+  private javax.el.ExpressionFactory _el_expressionfactory;
+  private org.apache.AnnotationProcessor _jsp_annotationprocessor;
+
+  public Object getDependants() {
+    return _jspx_dependants;
+  }
+
+  public void _jspInit() {
+    _el_expressionfactory = _jspxFactory.getJspApplicationContext(getServletConfig().getServletContext()).getExpressionFactory();
+    _jsp_annotationprocessor = (org.apache.AnnotationProcessor) getServletConfig().getServletContext().getAttribute(org.apache.AnnotationProcessor.class.getName());
+  }
+
+  public void _jspDestroy() {
+  }
+
+  public void _jspService(HttpServletRequest request, HttpServletResponse response)
+        throws java.io.IOException, ServletException {
+
+    PageContext pageContext = null;
+    HttpSession session = null;
+    ServletContext application = null;
+    ServletConfig config = null;
+    JspWriter out = null;
+    Object page = this;
+    JspWriter _jspx_out = null;
+    PageContext _jspx_page_context = null;
+
+
+    try {
+      response.setContentType("text/html; charset=utf-8");
+      pageContext = _jspxFactory.getPageContext(this, request, response,
+      			null, true, 8192, true);
+      _jspx_page_context = pageContext;
+      application = pageContext.getServletContext();
+      config = pageContext.getServletConfig();
+      session = pageContext.getSession();
+      out = pageContext.getOut();
+      _jspx_out = out;
+
+      out.write("\r\n");
+      out.write("<html>\r\n");
+      out.write("<head>\r\n");
+      out.write("<meta http-equiv=\"Content-Type\" content=\"text/html; charset=utf-8\">\r\n");
+      out.write("<title>Insert title here</title>\r\n");
+      out.write("</head>\r\n");
+      out.write("<body>\r\n");
+      out.write("<!-- JSP声明 -->\r\n");
+      out.write("\r\n");
+      out.write("\r\n");
+      out.write("<!--JSP脚本元素-->\r\n");
+
+String url = request.getProtocol();
+System.out.println(application.getRealPath("/"));
+
+      out.write("\r\n");
+      out.write("\r\n");
+      out.write("<!--JSP表达式-->\r\n");
+      out.print(objectMethod() );
+      out.write("\r\n");
+      out.write("<input type=\"text\" value=");
+      out.print(objectVar);
+      out.write(" />\r\n");
+      out.write("</body>\r\n");
+      out.write("</html>");
+    } catch (Throwable t) {
+      if (!(t instanceof SkipPageException)){
+        out = _jspx_out;
+        if (out != null && out.getBufferSize() != 0)
+          try { out.clearBuffer(); } catch (java.io.IOException e) {}
+        if (_jspx_page_context != null) _jspx_page_context.handlePageException(t);
+        else log(t.getMessage(), t);
+      }
+    } finally {
+      _jspxFactory.releasePageContext(_jspx_page_context);
+    }
+  }
+}
+```
+
+**从上面的翻译过程，我们可以得出以下结论：**
+
+**（1）HTML内容（模板元素）经过翻译后，在`_jspService`方法中使用`out.write()`方法打印出来。**
 
 ### 它就是一个Servlet
 
@@ -90,7 +227,7 @@ JSP页面只有在第一次被访问时才需要被翻译成Servlet类。对于�
 
 _jspService()方法中内置很多有用的对象，所以我们才能直接在<%%>中使用request, response, sesssion这些对象。
 
-```Java
+```java
 public void _jspService(final javax.servlet.http.HttpServletRequest request, final javax.servlet.http.HttpServletResponse response)
         throws java.io.IOException, javax.servlet.ServletException {
 
