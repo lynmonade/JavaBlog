@@ -1,3 +1,11 @@
+**tomcat地址**
+
+`D:\workspace\eclipse4x\.metadata\.plugins\org.eclipse.wst.server.core\tmp0\wtpwebapps`
+
+
+
+
+
 这个blog仅用于记录一些开发过程中的实战经验，用最精炼的语言讲解开发中各种实际问题以及解决办法。对于一些概念性的东西，blog中并未过多介绍，只是以提供参考references让大家去阅读大神概括的内容。
 
 现阶段我的blog编写风格：[解决JavaWeb的乱码问题](https://github.com/lynmonade/JavaBlog/blob/master/JavaWeb/%E8%A7%A3%E5%86%B3JavaWeb%E7%9A%84%E4%B9%B1%E7%A0%81%E9%97%AE%E9%A2%98.markdown)。套路大概是这样的：

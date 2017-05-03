@@ -1,4 +1,6 @@
-# 安装MyEclipse后你应该做这些设置
+# MyEclipse
+
+## 安装MyEclipse后你应该做这些设置
 
 安装好MyEclipse后，最好设置一下MyEclipse的全局编码格式，包括项目/文件的编码格式、文件的打开方式、JRE、tomcat内存方法如下：
 
@@ -22,7 +24,7 @@ windows--preferences--Java--Installed JREs
 -Xms512m -Xmx1024m -XX:MaxNewSize=256m -XX:MaxPermSize=256m
 ```
 
-# 如何对JDK源码设置断点debug
+## 如何对JDK源码设置断点debug
 
 Sun对rt.jar中的类进行编译时去除了调试信息，因此在eclipse中调试JDK源码时，我们无法看到JDK局部变量的值。因此我们需要自己编译相应的源码使之拥有调试信息。下面就来讲解一下如何自己编译JDK源码：
 
@@ -58,7 +60,7 @@ jar cf0 rt_debug.jar *
 
 ![jdk_debug](http://wx1.sinaimg.cn/mw690/0065Y1avgy1fdre6lp1urj30f60hpmxo.jpg)
 
-# Eclipse快捷键
+## Eclipse快捷键
 
 * 快速打开资源：CTRL+SHIFT+R
 * 查看类的继承关系：CTRL+T
@@ -69,6 +71,12 @@ jar cf0 rt_debug.jar *
   * resume: F8
   * terminate(拔电源): CTRL+F2 
 
-# Reference
+## Eclipse插件
+
+安装方法通常是：把插件解压出来，然后把features文件夹和plugins文件夹下的东西拷贝到eclipse安装目录的features文件夹和plugins文件夹下。
+
+* propedit：有了它，你的eclipse在打开包含中文properties文件时，再也不会出现`/u`字样了。
+
+## Reference
 
 * [如何在eclipse中debug调试进入JDK源码及显示调试过程中的局部变量的值](http://blog.csdn.net/ftp_2014/article/details/51087603)
