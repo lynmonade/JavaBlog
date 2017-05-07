@@ -57,6 +57,8 @@
 	</package>
 		
 </struts>
-
 ```
 
+## struts2流程
+
+![](http://wx3.sinaimg.cn/mw690/0065Y1avgy1ff8hezaqeqj30qt0bpq67.jpg)
