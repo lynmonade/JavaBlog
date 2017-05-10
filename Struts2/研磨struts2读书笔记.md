@@ -997,11 +997,1117 @@ result页面中的JSP脚本  //先渲染result
 action执行之后  //后执行拦截器的后继部分
 ```
 
-### 例子：更强大logger拦截器
+## 值栈和OGNL
+
+这一章涉及到很多概念，首先我们必须了解这些概念的含义，并清楚他们的用途。
+
+### 容易混淆的概念
+
+#### ActionContext和valueStack
+
+struts2本质上是由**控制流和数据流组成的**。控制流是指ActionProxy、ActionInvocation、Action、Interceptor、Result等这些控制组件。而数据流指的就是ActionContext和valueStack。数据流可以理解为**数据和流**。其中ActionContext表示数据，即数据的存储。而valueStack表示流，即数据在各个控制组件上的传输流动。
+
+根据HTTP协议，J2EE的servlet要求我们使用类似于`request.getParameter("username")`的方式获取前端参数，此时参数是String类型的，也就是说，从请求到响应的过程中，数据只能以String的表现形式存在：
+
+![](http://wx2.sinaimg.cn/mw690/0065Y1avgy1ffcplqiyerj30w205pjul.jpg)
+
+而ActionContext和valueStack则解决了后端数据表现形式的问题。在后端我们更希望用Java的POJO类来表示数据，并且POJO类在表示复杂数据时天生具有优势。
+
+![](http://wx2.sinaimg.cn/mw690/0065Y1avgy1ffcqm5o7m8j30y60dyag6.jpg)
+
+struts2的做法做出了如下改变：
+
+* Action不再和servlet绑定，解耦合，便于测试。
+* 由于action不再和servlet耦合，因此action也无需自己从请求对象中解析参数，而是直接从ActionContext对象中获取POJO对象。
+
+valueStack本质上是OGNL表达式的升级版。两者的作用都是：
+
+* 把页面参数封装为POJO对象。
+* 把POJO对象解析为页面显示数据。
+* 提供一定的表达式运算能力。
+
+在servlet中，页面参数的表达方式是username、password。而在struts2中，页面参数的表达方式是user.username、user.password，这便是OGNL表达式，只有使用这样的表达方式，OGNL才能通过POJO的getter/setter实现POJO对象的创建，并注入对应的属性。
+
+#### JSTL标签和struts2标签
+
+JSTL标签和struts2标签的作用都是一样的：**分离JSP上的Java代码和HTML代码，HTML用来管理数据展现在哪儿，而Java代码用来获取数据。让前端人员也有能力使用Java代码来动态输出页面内容**。首先需要明白一个道理：JSTL标签、struts2标签能做到的事情，JSP脚本元素<%%>肯定也能做到。那为什么还需要引入标签呢。因为前端人员大多不会java，因此Java提供了标签机制，标签本质上来说就是Java代码块，web引擎在解析标签时，会自动解析为对应的java代码块。比如前端人员期望在页面上显示本机IP地址，此时java开发人员就可以提前封装好一个显示本机IP的标签，例如`<y:show value="myip" />`，前端人员只需要使用这个标签即可，避免了在前端编写一大堆JSP脚本。通常，标签都会提供例如循环控制、条件控制等一些常用标签。
+
+注意，标签本质上只是在页面结构上作文章（XML元素），而表达式（EL、OGNL）则是在显示数据的值上座位上（XML属性的值）。
+
+#### freemarker和velocity
+
+这两者本质上来说也是标签，作用和JSTL标签、struts2标签一样。只是据说他们的渲染速度更快，标签更容易学习。
+
+#### EL表达式和OGNL
+
+前面说到，OGNL、valueStack都是为了实现字符串到POJO以及POJO到字符串的解析。而EL表达式也是完成类似的功能。EL表达式只能从page、request、session、application域中获取数据。而OGNL、valueStack则直接从ActionContext中获取数据。
+
+#### 小结
+
+* 存储POJO对象：ActionContext
+* String到POJO的封装，以及POJO到String的解析：valueStack、OGNL、EL表达式
+* 页面结构的控制：JSTL、struts2标签、 freemarker、velocity
+
+### 书中关于值栈的解释
+
+值栈可以分为狭义和广义的解释：狭义的值栈就是ValueStack，而广义的值栈则是ActionContext。可以理解为ActionContext包含ValueStack。ActionContext和ValueStack都是线程安全的，这也是值栈相较于servlet的一大优势。
+
+ActionContext中存储了如下数据：
+
+* request的parameters
+* request的attribute
+* session的attribute
+* application的attribute
+* ValueStack
+
+当我们希望在action中获取servlet相关的数据时，比如请求数据、session数据、cookie数据时，我们不需要直接和servlet的API打交道，只需要通过ActionContext获得。
+
+在页面上使用OGNL时，没有特殊标志的情况下，默认从ValueStack获取值。
+
+### ValueStack的基本使用
+
+ValueStack有一个特点，如果访问的值栈里有多个对象，且相同的属性在多个对象中同时出现，则值栈会按照从栈顶到栈底的顺序，寻找第一个匹配的对象。**ValueStack中存储的值的作用域是request作用域。因为ValueStack依赖于ActionContext，而struts2会为每一个请求创建一个独立的ActionContext，请求--响应结束收，ActionContext就会销毁。**
+
+ValueStack的具体方法可参考API，这里主要说几个：
+
+```java
+//根据表达式在value stack中，按照默认的访问顺序去获取表达式对应的值
+Object findValue(String expr); 
+
+//根据表达式，按照默认的访问顺序，向value stack中设置值
+void setValue(String expr, Object value);
+
+//获取value stack中定测对象，不修改value stack对象
+Object peek();
+
+//获取value stack中的顶层对象，并把这个对象从value stack中移走
+Object pop();
+
+//把对象加入到value stack对象中，并设置成为顶层对象
+void push(Object o);
+```
+
+**ValueStack的小例子：**在PreResultListener中通过`setValue(String expr, Object value)`方法，在渲染result之前，给account属性设置新的值：
+
+```java
+public class MyPreResult implements PreResultListener{
+	@Override
+	public void beforeResult(ActionInvocation actionInvocation, String result) {
+		actionInvocation.getInvocationContext().getValueStack().setValue("um.account", "NewAccount");
+	}
+}
+```
+
+通常情况下，向value stack里压入值都是由struts2去完成，而访问value stack多是通过标签中的OGNL表达式，因此开发者直接使用ValueStack的机会并不是很多。
+
+### OGNL的使用
+
+OGNL是对象图导航语言，它2是一种功能强大的表达式语言。通过它简单一致的表达式语法，可以存取对象的数据，调用对象的方法，遍历整个对象的结构图，实现字段类型转化等功能 。比如下面的例子，两个表达式`um.account`都是相同的，前一个保存对象属性的值，后一个取得对象属性的值。
+
+```html
+<input type="text" name="um.account" />
+<s:property value="um.account" />
+```
+
+#### 输出常量
+
+常量需要用额外的单引号括起来，常量表示无需OGNL来解析这个字符串。
+
+```
+//输出value stack中um.account对应的属性值
+<s:property value="um.account" />
+
+//输出常量um.account
+<s:property value="'um.account'" />
+```
+
+#### 访问value stack
+
+在OGNL中，没有前缀代表了访问当前值栈。此时会按照从栈顶到栈底的顺序，寻找第一个匹配的对象。
+
+```java
+<s:property value="um.account" />
+```
+
+#### 访问ActionContext中的数据
+
+在OGNL中，可以通过符号`#`来访问ActionContext中除了值栈之外的各种值，比如：
+
+* \#parameters：当前请求中的参数，对应`request.getParameter(name)`
+* \#request：请求作用域中的属性：对应`request.getAttribute(name)`
+* \#session：会话作用域中的属性：对应`session.getAttribute(name)`
+* \#application：应用程序作用域的属性。
+* \#attr：按照页面page、请求request、会话session和应用application的顺序，返回第一个符合条件的属性。
+
+```jsp
+//login.jsp
+<form action="../bb/helloWorldAction.action" method="post">
+	账号1：<input type="text" name="account" /> <br>
+	密码1：<input type="password" name="password" /> <br>
+	<input type="submit" value="提交" />
+</form>
+
+//welcome.jsp
+<body>
+<%@ taglib prefix="s" uri="/struts-tags" %>
+欢迎账号为<s:property value="account" />的朋友来访 <br>
+请求参数中的账号：<s:property value="#parameters.account" /> <br>
+<%request.setAttribute("account", "request_account"); %>
+请求属性中的账号：<s:property value="#request.account" /> <br>
+会话属性中的账号：<s:property value="#session.account" /> <br>
+应用属性中的账号：<s:property value="#application.account" /> <br>
+attr中的账号：<s:property value="#attr.account" /> 
+</body>
+```
+
+```java
+//Action
+public class HelloWorldAction extends ActionSupport{
+	private String account;
+	private String password;
+	
+	@Override
+	public String execute() throws Exception {
+		System.out.println("account="+account+",password="+password); 
+		//注册我们的监听器
+		PreResultListener pr = new MyPreResult();
+		ActionContext ac = ActionContext.getContext();
+		ac.getSession().put("account", "session_account");
+		ac.getApplication().put("account", "application_account");
+		return "toWelcome";
+	} 
+	//省略getter/setter
+}
+
+//打印结果
+欢迎账号为admin的朋友来访 
+请求参数中的账号：admin 
+请求属性中的账号：request_account 
+会话属性中的账号：session_account 
+应用属性中的账号：application_account 
+attr中的账号：request_account
+```
+
+#### 访问静态方法和静态属性
+
+```java
+@类的全路径名@属性名称
+@类的全路径名@方法名称(参数列表)
+```
+
+```java
+//struts.xml：设置允许静态方法访问
+<constant name="struts.ognl.allowStaticMethodAccess" value="true" />
+
+//action
+public class HelloWorldAction extends ActionSupport{
+	//静态成员变量必须是public，并且没有getter/setter
+	public static String staticVar = "staticVar";
+	
+	public static void staticMethod() {
+		System.out.println("this is static method");
+	}
+}
+
+//welcome.jsp
+<s:property value="@com.HelloWorldAction@staticVar" /> <br>
+<s:property value="@com.HelloWorldAction@staticMethod()" /> <br>
+```
+
+#### 访问域对象
+
+其实就是把value值设置为`um.account`的格式，这样的做法前面已经学习过了。有几点需要注意：
+
+1. 首先，struts2默认寻找um属性对应getter/setter，如果找到，则使用getter/setter来赋值，否则继续寻找。
+2. 接着，strut2寻找public修饰的um属性，如果找到则直接赋值，否则将赋值失败。需注意，如果um属性设置为public，则必须在声明时同时初始化um：`public UserModel um = new UserMdoel();`。
+
+良好的编程习惯是，把属性设置为private，并提供getter/setter。
+
+```jsp
+//login.jsp
+<form action="../bb/helloWorldAction.action" method="post">
+	账号1：<input type="text" name="um.account" /> <br>
+	密码1：<input type="password" name="um.password" /> <br>
+	<input type="submit" value="提交" />
+</form>
+
+//welcome.jsp
+欢迎账号为<s:property value="um.account" />的朋友来访 <br>
+```
+
+```java
+//action
+public class HelloWorldAction extends ActionSupport{
+	private UserModel um;
+	
+	@Override
+	public String execute() throws Exception {
+		System.out.println(um); 
+		return "toWelcome";
+	}
+	//省略getter/setter
+}
+```
+
+#### 访问List和数组
+
+```jsp
+//login.jsp
+<form action="../bb/helloWorldAction.action" method="post">
+	账号：<input type="text" name="umList[0].account" /> <br>
+	密码：<input type="password" name="umList[0].password" /> <br>
+	<input type="submit" value="提交" />
+</form>
+
+//welcome.jsp
+<body>
+<%@ taglib prefix="s" uri="/struts-tags" %>
+用户0账号:<s:property value="umList[0].account"/> <br>
+用户0密码:<s:property value="umList[0].password"/> <br>
+用户1账号:<s:property value="umList[1].account"/> <br>
+用户1密码:<s:property value="umList[1].password"/> <br>
+list.size():<s:property value="umList.size" /> <br>
+list.isEmpty():<s:property value="umList.isEmpty"/>
+</body>
+```
+
+```java
+public class HelloWorldAction extends ActionSupport{
+	private List<UserModel> umList;
+	//省略getter/setter
+	@Override
+	public String execute() throws Exception {
+		System.out.println("第0个用户的账号："+umList.get(0).getAccount());
+		System.out.println("第0个用户的密码："+umList.get(0).getPassword());
+		//放入一个新的用户
+		UserModel um = new UserModel();
+		um.setAccount("lyn");
+		um.setPassword("99999");
+		umList.add(um);
+		return "toWelcome";
+	}
+}
+```
+
+如果属性是数组，则唯一需要变化的是，数组必须在声明时就立刻像下面这样初始化：
+
+```java
+private UserModel[] umList = {new UserModel(), new UserModel()};
+
+//此外，数组还提供了这样的表达式
+array.length:<s:property value="umList.length" /> <br>
+```
+
+#### 访问map
+
+```jsp
+//login.jsp
+<form action="../bb/helloWorldAction.action" method="post">
+	账号：<input type="text" name="userMap['umtest'].account" /> <br>
+	密码：<input type="password" name="userMap['umtest'].password" /> <br>
+	<input type="submit" value="提交" />
+</form>
+
+//welcome.jsp
+用户0账号:<s:property value="userMap['umtest'].account"/> <br>
+用户0密码:<s:property value="userMap['umtest'].password"/> <br>
+```
+
+```java
+//action
+public class HelloWorldAction extends ActionSupport{
+	private Map<String, UserModel> userMap;
+	//省略getter/setter
+	@Override
+	public String execute() throws Exception {
+		System.out.println("第0个用户的账号："+userMap.get("umtest").getAccount());
+		System.out.println("第0个用户的密码："+userMap.get("umtest").getPassword());
+		//放入一个新的用户
+		UserModel um = new UserModel();
+		um.setAccount("lyn");
+		um.setPassword("99999");
+		userMap.put("umtest", um);
+		return "toWelcome";
+	}
+}
+```
+
+### ActionContext
+
+```java
+//常用方法
+ActionContext ac = ActionContext.getContext();
+ValueStack vs = ActionContext.getContext().getValueStack();
+ActionContext ac = invocation.getInvocationContext();
+```
+
+struts2在每次执行action之前都会创建新的ActionContext，在同一个县城里ActionContext里面的属性是唯一的，这样Action就可以在多线程中使用。
+
+使用ActionContext可以获得session、request中的数据，但其实返回的并不是HttpServletRequest、HttpSession对象，而是Map对象。Map对象对HttpSession进行了封装。正是因为有了ActionContext，Action才能与ServletAPI解耦合。
+
+### SessionAware接口
+
+一般来说，为了能让execute可以脱离web容器独立测试，我们不会在execute方法中使用ActionContext，因为ActionContext方法是与ServletAPI耦合的。那我们想要访问session域中的数据应该怎么办呢？答案：可以让Action实现SessionAware接口。此外，也有RequestAware、ApplicationAware、ParameterAware接口，用法类似。
+
+```java
+//ation
+HelloWorldAction extends ActionSupport implements SessionAware{
+	private Map<String, Object> session;
+	@Override
+	public String execute() throws Exception {
+		session.put("mySession", "123abc"); //这里的赋值与HttpSession是联动的
+		return "toWelcome";
+	}
+	
+	//实现SessionAware接口后，必须覆盖这个方法
+	//struts2会通过DI依赖注入的方式，为我们给sesion属性赋值
+	//这样就不用麻烦ActionContext了
+	@Override
+	public void setSession(Map<String, Object> session) {
+		this.session = session;
+	}
+}
+
+//welcome.jsp
+<s:property value="#session.mySession"/>
+```
+
+### ServletActionContext
+
+ServletActionContext是ActionContext的子类，他主要用于获取原生的ServletAPI相关的对象，包括HttpServletRequest、HttpServletResponse、ServletContext、PageContext。
+
+### Context的思考
+
+在Action中，优先考虑使用接口+DI依赖注入的方式实现访问各种域，尽量不要再action中使用ActionContext，这有利于Action的独立测试。
+
+如果实在无法满足要求，再考虑在Action的execute中使用ActionContext，注意，不要在Action的空构造函数中使用ActionContext，因为那时ActionContext可能还没初始化完毕。
+
+最后再考虑使用ServletActionContext。
+
+## 第8章struts2的TagLib
+
+标签有几大好处：
+
+* 分离JSP上的Java代码和HTML代码，HTML用来管理数据展现在哪儿，而Java代码用来获取数据
+* 无需在JSP中引入相关包、类
+* 前端人员不懂Java也能用标签完成工作。
+
+### struts2标签分类
+
+* 数据标签：用来从值栈上取值或向值栈赋值
+* 控制标签：控制程序的运行流程，比如判断分支、循环
+* UI标签：用来显示UI页面的内容，多会生成HTML
+* 杂项标签：用于完成其他功能的标签，比如生成URL和输出国际化文本等。
+
+### 数据标签
+
+#### property
+
+property用于输出值，标签包含如下属性：
+
+* value：用来获取值的OGNL表达式，如果value属性值没有指定，那么将会被设定为top，即返回位于值栈最顶端的对象。
+* default：如果按照value属性指定的OGNL求值后返回的是空值，但仍希望输出某些内容，那么就可以使用default属性来指定这些内容。
+* escape：是否转义HTML，默认为true
+* escapeJavaScript：是否转义js，默认为false
+
+```jsp
+用户账号:<s:property value="um.account" default="xxx"/> <br>
+用户密码:<s:property value="um.password" default="YYY"/> <br>
+```
+
+#### set
+
+用于定义一个变量，并赋值。属性如下：
+
+* var：变量名。刻在OGNL表达式中使用这个名称来引用存放到值栈的这个对象。
+* value：设置给变量的值，可以是常量，也可以是OGNL表达式。
+* scope：变量的生存周期，可选application、session、request、page、action，默认为action。
+
+**set应用：重命名**
+
+```
+<!-- 给#sessoin.user定义了一个新名称tempUser，后面就可以使用新名称了 -->
+<s:set var="tempUser" value="#sessoin.user"/>
+<!-- 引用新名称前，必须用# -->
+<s:property value="#tempUser.account"/>
+<s:property value="#tempUser.password"/>
+```
+
+**set应用：实现i++**
+
+```jsp
+<%@ taglib prefix="s" uri="/struts-tags" %>
+<s:set var="i" value="1" />
+i的值：<s:property value="#i"/> <br>
+<s:set var="i" value="#i+1"/>
+i++的值：<s:property value="#i"/> <br>
+```
+
+**set应用：scope属性**
+
+它表示set所定的变量的生存周期。值为action表示这个变量的生存周期是当前ActionContext范围。
+
+```jsp
+//other.jsp
+<s:set var="v1" scope="application" value="'application范围的值'"/> <br>
+<s:set var="v2" scope="session" value="'session范围的值'"/> <br>
+<s:set var="v3" scope="request" value="'request范围的值'"/> <br>
+<s:set var="v4" scope="page" value="'page范围的值'"/> <br>
+<s:set var="v5" scope="action" value="'action范围的值'"/> <br>
+
+//other2.jsp
+输出application的值：<s:property value="#application['v1']"/> <br>
+输出session的值：<s:property value="#session['v2']"/> <br>
+输出request的值：<s:property value="#request['v3']"/> <br>
+<!-- page输出时用的是attr -->
+输出attr的值：<s:property value="#attr['v4']"/> <br>
+<!-- action输出值，没有前缀 -->
+输出action的值：<s:property value="#v5"/> <br>
+```
+
+先通过URL访问other.jsp，再通过URL访问other2.jsp，
+
+#### push
+
+push表现用于把指定的对象放到值栈的栈顶。属性只有一个。push和set都具有重命名的作用，但set的作用域是ActionContext，即请求域。而push的作用域是自己标签内。
+
+* value：用来指定放到值栈栈顶的对象。
+
+```java
+public class HelloWorldAction extends ActionSupport implements SessionAware{
+	private UserModel um;
+	private Map<String, Object> session;
+	
+	@Override
+	public String execute() throws Exception {
+		UserModel umtest = new UserModel();
+		umtest.setAccount("abc");
+		umtest.setPassword("123");
+		session.put("umtest", umtest);
+		return "toWelcome";
+	}
+	//省略getter/setter
+}
+
+//welcome.jsp
+<s:push value="#session.umtest">
+	<s:property value="account" />
+	<s:property value="password" />
+</s:push>
+```
+
+#### bean标签和param标签
+
+bean标签用于创建JavaBean实例，并将其压入值栈中，可以添加param标签。param标签用于为其他标签添加参数化设置的功能。
+
+bean的属性：
+
+* name：指定了要创建的JavaBean的全类名，必须要设置
+* var：引用这个JavaBean实例的名称
+
+param的属性：
+
+* name：参数名称
+* value：参数的值
+
+```jsp
+<%@ taglib prefix="s" uri="/struts-tags" %>
+<s:bean name="com.UserModel" var="user">
+	<s:param name="account" value="abc" />
+	<s:param name="password" value="123" />
+</s:bean>
+<!-- 引用时需要# -->
+<s:property value="#user.account" />
+<s:property value="#user.password" />
+```
+
+#### date
+
+date标签用于格式化输出一个日期数据。属性包括：
+
+* format：用于指定日期显示格式，如果不指定，将会去找国际化细腻中key为struts.date.format的指定值。
+* name：被格式化的值，必须设置，它本身是一个OGNL表达式。
+* nice：是否显示当前时间与指定时间的差。如果设置为true，则不再显示指定时间，只显示当前时间与指定时间的差。
+
+```jsp
+<%
+	Calendar c = Calendar.getInstance();
+	Date date = c.getTime();
+	request.setAttribute("dd", date);
+%>
+<%@ taglib prefix="s" uri="/struts-tags" %>
+日期为：<s:date name="#request.dd" format="yyyy-MM-dd" nice="true"/>
+```
+
+#### debug
+
+debug标签可以帮助程序员进行调试，它在页面上生成一个链接，点击这个链接可以查看ActionContext和值栈中所有能访问的值。
+
+```java
+<s:debug />
+```
+
+## 第10章 数据校验
+
+无论是哪一种验证器，都要考虑一下几个问题：
+
+* 验证谁？
+* 使用什么条件验证？
+* 不满足条件显示什么结果？
+* 不满足验证条件时，显示的结果出现在页面的什么位置？
+
+struts2的校验器是基于xml文件的。struts2默认提供了许多校验器，你只需要在Action所在包下创建一个action名称-validation.xml文件，并在其中引用定义好的校验器即可。
+
+**struts2验证的是用户提交的参数，一般为表单参数。**
+
+**struts2验证器的验证条件：验证条件写在xml文件中。**
+
+**不满足条件时，错误信息定义在xml文件中。**
+
+**错误信息通过struts2标签来显示。**
+
+**struts2的验证时机：**验证发生在execute方法运行之前，在struts2的params拦截器已经把请求的参数反射的设置到action的属性之后。因此验证器实际上验证的是值栈的值。
+
+**struts2验证跳转：**如果用户输入的参数完全满足验证条件，则会继续执行execute方法。如果用户输入的参数不完全满足验证条件，就会跳转到这个action所配置的名为input的Result页面上。
+
+### 验证器的两种类型
+
+struts2中的验证器分为两种类型：
+
+* 字段验证器：用来验证提交的表单内的单个字段。
+* 动作验证期：用于整个动作，一般用于验证提交的表单内的多个字段的关系，当然也可以验证单个字段 。
+
+**字段验证器的例子：**账号、姓名不能为空，年龄至少18岁。
+
+```java
+//model
+public class MyUser {
+	private String account;
+	private String name;
+	private int age;
+	//省略getter/setter
+}
+
+//action
+public class RegisterAction extends ActionSupport{
+	
+	private MyUser user = new MyUser();
+
+	public String execute() throws Exception{
+		System.out.println("传入的数据为："+user);
+		return SUCCESS;
+	}
+	//省略getter/setter
+}
+```
+
+```jsp
+//register.jsp
+<body>
+<%@ taglib prefix="s" uri="/struts-tags"%>
+用户注册
+<hr>
+<s:form action="/bb/registerAction.action" method="post">
+	<s:textfield name="user.account" label="账号" />
+	<s:textfield name="user.name" label="姓名" />
+	<s:textfield name="user.age" label="年龄" />
+	<s:submit value="注册"/>
+</s:form>
+</body>
+
+//success.jsp
+<body>
+恭喜您注册成功！
+</body>
+```
+
+```xml
+//struts.xml
+<action name="registerAction" class="com.RegisterAction">
+	<result name="success">/view/success.jsp</result>
+	<result name="input">/view/register.jsp</result>
+</action>
+
+//RegisterAction-validation.xml 放在RegisterAction.java所在包下
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE validators PUBLIC
+        "-//OpenSymphony Group//XWork Validator 1.0.2//EN"
+        "http://www.opensymphony.com/xwork/xwork-validator-1.0.2.dtd">
+<validators>
+	<field name="user.account"> <!-- 账号不能为空 -->
+		<field-validator type="requiredstring">
+			<message>请输入账号</message>
+		</field-validator>
+	</field>
+	<field name="user.name"> <!-- 姓名不能为空 -->
+		<field-validator type="requiredstring">
+			<message>请输入姓名</message>
+		</field-validator>
+	</field>
+	<field name="user.age"> <!-- 年龄至少18岁 -->
+		<field-validator type="int">
+			<param name="min">18</param>
+			<message>年龄必须在18岁以上</message>
+		</field-validator>
+	</field>	
+</validators>
+```
+
+**动作验证器的例子：**在上面例子的基础上，要求输入的账号也为数字，并要求输入的age值要大于账号的值。
+
+```xml
+<!--RegisterAction-validation.xml-->
+<validators>
+	<validator type="expression">
+		<param name="expression"><![CDATA[user.age>=user.account]]></param>
+		<message>年龄必须在${user.account}之上，您输入的是${user.age}</message>
+	</validator>
+</validators>
+
+<!-- 在页面上打印动作验证器的错误信息时，必须显式地使用<s:actionerror/>标签 -->
+<s:actionerror/>
+```
+
+### 校验器的运行原理
+
+在struts-default.xml中可以找到三个与校验器有关拦截器。defaultStack默认引用了这三个校验器，因此所有的action都可以使用它们。
+
+```xml
+<interceptors>
+	<interceptor name="conversionError" class="org.apache.struts2.interceptor.StrutsConversionErrorInterceptor"/>
+	<interceptor name="params" class="com.opensymphony.xwork2.interceptor.ParametersInterceptor"/>
+	<interceptor name="validation" class="org.apache.struts2.interceptor.validation.AnnotationValidationInterceptor"/>
+</interceptors>
+<interceptor-stack name="defaultStack">
+	<interceptor-ref name="params">
+		<param name="excludeParams">dojo\..*,^struts\..*</param>
+    </interceptor-ref>
+	<interceptor-ref name="conversionError"/>
+	<interceptor-ref name="validation">
+		<param name="excludeMethods">input,back,cancel,browse</param>
+	</interceptor-ref>
+</interceptor-stack>
+```
+
+这三个拦截器都在Action的execute方法执行前运行，分别实现：
+
+* params拦截器将请求的参数反射地设置入Action的属性。当然这时候有可能出错，比如，将”18a“这个字符串放入一个int属性的时候，肯定会出错。
+* conversionError拦截器在params拦截器出错的请求下，把出现的错误放在值栈中。
+* validation拦截器验证Action的属性是否符合条件。
+
+其中最关键的是validation拦截器，它会根据验证文件的配置进行验证，验证的是值栈中的相应内容。显示错误可以使用`<s:fielderror />`标签，它可以集中的显示错误信息。
+
+对于上例中的年龄字段，如果我们填写一个非数字，比如“12a”，则此时会显示两个错误。具体原因是：首先首先params拦截器获取到前端的参数"12a"，"12a"无法转换为数字，因此就不能给值栈中的user.age设置值。接着conversionError发挥作用，它发现"12a"无法转换后，便把转换错误的信息保存到值栈中。最后validation拦截器仍然会对user.age进行验证，由于params拦截器无法给user.age赋值，因此user.age保持int的默认值，即零，此时验证失败，并把验证失败的信息写入值栈。
+
+```
+Invalid field value for field "user.age"
+年龄必须在18岁以上
+```
+
+![](http://wx1.sinaimg.cn/mw690/0065Y1avgy1ffecg1khcrj30jh0hwn12.jpg)
+
+### 内建验证器
+
+struts2在xwork-core-2.1.6.jar文件中的`/com/opensymphony/xwork2/validator/validators/default.xml`中生命了许多內建的验证器。具体用法详见《研磨struts2》的第10.4章节。
+
+### 自定义验证器
+
+实现自定义验证时需要考虑三个问题：
+
+* 如何编写自定义验证器的代码
+* 如何注册自定义验证器
+* 程序中如何引用自定义验证器
+
+**自定义验证器的例子：**实现一个不接受中文字符的验证器，验证逻辑是通过比较字符串的字节数和字符数。就可以知道字符串中是否有中文字符了。如果字节数大于字符数，那么肯定包含了中文字符。
+
+```java
+//第一步：创建自定义验证器类，必须继承FieldValidatorSupport类
+public class ChineseValidator extends FieldValidatorSupport {
+
+	/*
+	 * 表示是否包含字符串，有三种模式：
+	 * 1. none 没有中文字符
+	 * 2. some 含有部分中文字符，默认值
+	 * 3. all 全是中文字符
+	 */
+	private String mode = "some";
+
+	public String getMode() {
+		return mode;
+	}
+
+	public void setMode(String mode) {
+		this.mode = mode;
+	}
+
+	@Override
+	public void validate(Object object) throws ValidationException { 
+		//获取字段名称
+		final String fieldName = this.getFieldName();
+		//获取字段值
+		final String fieldValue = (String)this.getFieldValue(fieldName, object);
+		//字节数
+		final int bytes = fieldValue.getBytes().length;
+		//字符数
+		final int chars = fieldValue.length();
+		
+		if(mode.equals("none")) {
+			if(chars!=bytes) {
+				this.addFieldError(fieldName, object);
+			}
+		} else if(mode.equals("some")) {
+			if(chars==bytes || chars*3==bytes) {
+				this.addFieldError(fieldName, object);
+			}
+		} else if(mode.equals("all")) {
+			if(chars*3!=bytes) {
+				this.addFieldError(fieldName, object);
+			}
+		}
+	}
+}
+```
+
+```xml
+<!--
+第二步：注册你的验证器，注意，自定义的验证器会覆盖內建验证器，所以最好的办法是：
+	1. 在src目录下，创建一个名为validators.xml的文件，
+	2.然后把xwork-core-2.1.6.jar/com/opensymphony/xwork2/validator/validators/default.xml文件中的内容完整的拷贝进去
+	3：最后在<validators>元素中，添加子元素<validator>并注册你的自定义验证器
+-->
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE validators PUBLIC
+        "-//OpenSymphony Group//XWork Validator Config 1.0//EN"
+        "http://www.opensymphony.com/xwork/xwork-validator-config-1.0.dtd">
+
+<!-- START SNIPPET: validators-default -->
+<validators>
+    <validator name="required" class="com.opensymphony.xwork2.validator.validators.RequiredFieldValidator"/>
+    <validator name="requiredstring" class="com.opensymphony.xwork2.validator.validators.RequiredStringValidator"/>
+    <validator name="int" class="com.opensymphony.xwork2.validator.validators.IntRangeFieldValidator"/>
+    <validator name="long" class="com.opensymphony.xwork2.validator.validators.LongRangeFieldValidator"/>
+    <validator name="short" class="com.opensymphony.xwork2.validator.validators.ShortRangeFieldValidator"/>
+    <validator name="double" class="com.opensymphony.xwork2.validator.validators.DoubleRangeFieldValidator"/>
+    <validator name="date" class="com.opensymphony.xwork2.validator.validators.DateRangeFieldValidator"/>
+    <validator name="expression" class="com.opensymphony.xwork2.validator.validators.ExpressionValidator"/>
+    <validator name="fieldexpression" class="com.opensymphony.xwork2.validator.validators.FieldExpressionValidator"/>
+    <validator name="email" class="com.opensymphony.xwork2.validator.validators.EmailValidator"/>
+    <validator name="url" class="com.opensymphony.xwork2.validator.validators.URLValidator"/>
+    <validator name="visitor" class="com.opensymphony.xwork2.validator.validators.VisitorFieldValidator"/>
+    <validator name="conversion" class="com.opensymphony.xwork2.validator.validators.ConversionErrorFieldValidator"/>
+    <validator name="stringlength" class="com.opensymphony.xwork2.validator.validators.StringLengthFieldValidator"/>
+    <validator name="regex" class="com.opensymphony.xwork2.validator.validators.RegexFieldValidator"/>
+    <validator name="conditionalvisitor" class="com.opensymphony.xwork2.validator.validators.ConditionalVisitorFieldValidator"/>
+    <!-- 我的自定义验证器 -->
+    <validator name="chinese" class="com.ChineseValidator" />
+</validators>
+<!--  END SNIPPET: validators-default -->
+```
+
+```xml
+<!-- 第三步：在RegisterAction-validation.xml中引用我的自定义验证器 -->
+<validators>
+	<field name="user.account">
+		<field-validator type="chinese">
+			<param name="mode">none</param>
+			<message>用户账号只能输入非中文字符</message>
+		</field-validator>
+	</field>
+</validators>
+```
+
+### 引用验证器返回的错误信息
+
+引用字段验证错误有梁总方式：
+
+* 对于字段验证错误来说，在<s:form>使用xhtml风格的时候，<s:textfield>标签会将这个字段的错误信息显示在这个文本框的上边。
+* 还可以用<s:fielderror/>标签来将字段验证的错误信息显示在指定位置，如果不指定其fieldName属性则会显示所有的错误，如果指定了fieldName属性则会显示指定字段的错误。
+
+对于动作验证错误 ，可以使用<s:actionerror/>标签，它会把所有的动作验证错误显示在指定的位置。
+
+### 验证器的查找顺序
+
+如果有多个验证器匹配，则会按照从上到下的顺序调用验证器：
+
+* 父类-validation.xml
+* 父类-别名-validation.xml
+* 接口-validation.xml
+* 接口-别名-validation.xml
+* Action类名-validation.xml
+* Action类名-别名-validation.xml
+
+这里说的别名是<action>元素的method属性值，注意，上面的验证规则，绝不是体改或覆盖的关系，而是仅仅指定了先后顺序。下面是一个小例子，此时，对于年龄的两个验证器都会执行，先执行BaseAction的年龄验证器，后执行RegisterAction的年龄验证器。
+
+```java
+//BaseAction.java
+public class BaseAction extends ActionSupport{
+}
+
+//RegisterAction.java
+public class RegisterAction extends BaseAction{
+	
+	private MyUser user = new MyUser();
+	//省略getter/setter
+	public String execute() throws Exception{
+		System.out.println("传入的数据为："+user);
+		return SUCCESS;
+	}
+}
+```
+
+```xml
+<!-- BaseAction-validation.xml -->
+<field name="user.age">
+	<field-validator type="int">
+		<param name="min">15</param>
+		<message>BaseAction的验证：年龄必须在15岁以上</message>
+	</field-validator>
+</field>
+
+<!-- RegisterAction-validation.xml -->
+<field name="user.account">
+	<field-validator type="requiredstring">
+		<message>请输入账号</message>
+	</field-validator>
+</field>
+<field name="user.age">
+	<field-validator type="int">
+		<param name="min">18</param>
+		<message>RigesterAction的验证：年龄必须在18岁以上</message>
+	</field-validator>
+</field>
+```
+
+```jsp
+<body>
+<%@ taglib prefix="s" uri="/struts-tags"%>
+用户注册
+<s:fielderror />
+<hr>
+<s:actionerror/>
+<br>
+<s:form action="/bb/registerAction.action" method="post">
+	<s:textfield name="user.account" label="账号" />
+	<s:textfield name="user.name" label="姓名" />
+	<s:textfield name="user.age" label="年龄" />
+	<s:submit value="注册"/>
+</s:form>
+</body>
+```
+
+```java
+//仅在年龄中输入13，验证结果：
+BaseAction的验证：年龄必须在15岁以上
+RigesterAction的验证：年龄必须在18岁以上
+请输入账号
+```
+
+### 验证器短路
+
+在上面的例子中，两个验证器都对年龄进行了验证，如果我们希望让验证通不过第一个条件的时候，后续对这个字段的验证就不用进行了，则只需为<field-validator>或<validator>元素设置短路属性`short-circuit=true`即可。注意，只有xwork-validator-1.0.2.dtd的DTD声明才支持短路属性，1.0版本的DTD不支持。
+
+```xml
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE validators PUBLIC
+        "-//OpenSymphony Group//XWork Validator 1.0.2//EN"
+        "http://www.opensymphony.com/xwork/xwork-validator-1.0.2.dtd">
+<validators>
+	<field name="user.age">
+		<field-validator type="int" short-circuit="true">
+			<param name="min">15</param>
+			<message>BaseAction的验证：年龄必须在15岁以上</message>
+		</field-validator>
+	</field>	
+</validators>	
+```
+
+## 第11章 类型转换
+
+struts2默认支持对“简单类型”，“枚举类型”，“复合类型”进行类型自动类型转换，并帮我们自动绑定到对应的属性上。
+
+### 简单类型
+
+* int/Integer
+* short/Short
+* long/Long
+* float/Float
+* double/Double
+* boolean/Boolean
+* byte/Byte
+* char/Character
+* BigInteger
+* BigDecimal
+* Date
+
+### 枚举类型
+
+```java
+//ConverterAction.java
+public class ConverterAction extends ActionSupport{
+	private ColorEnum color;
+	public String execute() throws Exception {
+		System.out.println("color="+color);
+		return SUCCESS;
+	}
+	public ColorEnum getColor() {
+		return color;
+	}
+	public void setColor(ColorEnum color) {
+		this.color = color;
+	}
+}
+//枚举类型
+enum ColorEnum {
+	red, blue, green;
+}
+<!-- struts.xml -->
+<action name="converterAction" class="com.ConverterAction" >
+	<result name="success">/view/success.jsp</result>
+</action>
+
+//访问地址：http://localhost:8080/struts21/bb/converterAction.action?color=blue
+```
+
+### 复合类型
+
+复合类型JavaBean、数组或List、Map。前面都已经讲过，主要差别在OGNL的表达式方面：
+
+* JavaBean：user.account
+* 数组或List：users[0].account
+* Map：user['key']
+
+### 自定义类型转换器
+
+如果用户想在一个文本框内输入人长方形的宽和高（width:height），比如16:9，再有系统自动计算出长方形的面积，此时便需要自定义类型转换器，自行解析这个字符串了。自定义类型转换器需要继承StrutsTypeConverter抽象类，并实现convertFromString()、convertToString()方法。
+
+**第一步：编写JavaBean和Action**
+
+```java
+//JavaBean
+public class Rectangle {
+	private int width;
+	private int height;
+	public int getWidth() {
+		return width;
+	}
+	public void setWidth(int width) {
+		this.width = width;
+	}
+	public int getHeight() {
+		return height;
+	}
+	public void setHeight(int height) {
+		this.height = height;
+	}
+}
+
+//Action
+public class ConverterAction extends ActionSupport{
+	private Rectangle rectangle;
+
+	public String execute() throws Exception {
+		int value = rectangle.getWidth()*rectangle.getHeight();
+		System.out.println("长方形面积为："+value);
+		return SUCCESS;
+	}
+
+	public Rectangle getRectangle() {
+		return rectangle;
+	}
+
+	public void setRectangle(Rectangle rectangle) {
+		this.rectangle = rectangle;
+	}
+}
+
+//struts.xml
+<action name="converterAction" class="com.ConverterAction" >
+	<result name="success">/view/success.jsp</result>
+</action>
+```
+
+**第二步：编写自定义类型转换的类**
+
+```java
+public class RectangleConverter extends StrutsTypeConverter{
+
+	//前端参数转为后端JavaBean
+	//values：用户传入的参数
+	//context：可以让我们获得值栈中的值
+	//toClass：将要被转换成的对象类型
+	@Override
+	public Object convertFromString(Map context, String[] values, Class toClass) {
+		String userInput = values[0];
+		String[] arr = userInput.split(":");
+		
+		//在真正的格式转化之前，先把所有的用户属性可能的错误拦截住
+		if(arr.length!=2) {
+			throw new TypeConversionException("请输入正确的长方形格式，如16:9");
+		}
+		try {
+			Rectangle rectangle = new Rectangle();
+			int width = Integer.parseInt(arr[0]);
+			int height = Integer.parseInt(arr[1]);
+			rectangle.setWidth(width);
+			rectangle.setHeight(height);
+			return rectangle;
+		} catch (RuntimeException e) {
+			throw new TypeConversionException("请输入正确的长方形格式，如16:9", e);
+		}
+	}
+
+	//后端JavaBean转为前端String
+	//context：可以让我们获得值栈中的值
+	//需要被转换的对象
+	@Override
+	public String convertToString(Map context, Object o) {
+		Rectangle rectangle = (Rectangle)o;
+		//最终写入到值栈中的值，页面上使用<s:property value="rectangle"/>来引用
+		return "长方形：宽="+rectangle.getWidth()+",高="+rectangle.getHeight();
+	}
+}
+```
+
+**第三步：注册自定义转换类**
+
+```properties
+//在src目录下创建一个名为xwork-conversion.properties的文件，内容为
+com.Rectangle=com.RectangleConverter
+```
+
+**第四步：编写页面，OGNL表达式直接使用rectangle**
+
+```jsp
+<!-- register.jsp -->
+<body>
+<%@ taglib prefix="s" uri="/struts-tags"%>
+长方形
+<br>
+<s:form action="/bb/converterAction.action" method="post">
+	<s:textfield name="rectangle" label="输入宽和高" />
+	<s:submit value="提交"/>
+</s:form>
+</body>
+
+<!-- success.jsp -->
+<body>
+<%@ taglib prefix="s" uri="/struts-tags"%>
+<s:property value="rectangle"/>
+</body>
+```
+
+上面定义的是项目全局的类型转换器，我们也可以让这个类型转换器只应用于类级别。具体做法如下：
+
+```properties
+//删除xwork-conversion.properties
+//在Action所在包下创建properties文件，格式为Action名-conversion.properties
+//比如ConverterAction-conversion.properties，内容为：
+rectangle=com.RectangleConverter
+```
 
 
 
-### 例子：登录检查拦截器
+
 
 
 
