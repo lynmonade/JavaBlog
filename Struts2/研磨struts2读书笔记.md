@@ -2105,6 +2105,380 @@ com.Rectangle=com.RectangleConverter
 rectangle=com.RectangleConverter
 ```
 
+## 第13章 文件上传下载
+
+struts2在Common-FileUpload的基础上进行了封装，进一步的简化了文件上传的代码。
+
+### 文件上传
+
+#### 例子1：上传多个文件
+
+```jsp
+//filupload.jsp
+<form Action="../bb/uploadAction.action" method="post" enctype="multipart/form-data">
+	文件：<input type="file" name="myFile" /> <br>
+	文件：<input type="file" name="myFile" /> <br>
+	文件：<input type="file" name="myFile" /> <br>
+	文件：<input type="file" name="myFile" /> <br>
+	<input type="submit" value="提交" />
+</form>
+
+//success.jsp
+<body>
+<%@ taglib prefix="s" uri="/struts-tags"%>
+成功上传文件：<s:property value="myFileFileName"/>
+</body>
+```
+
+```java
+//action
+public class UploadAction extends ActionSupport{
+	private File[] myFile;
+	private String[] myFileFileName;
+	//省略getter/setter
+	public String execute() throws Exception {
+		OutputStream output = null;
+		InputStream input = null;
+		try {
+			for(int i=0; i<myFileFileName.length; i++) {
+				//filetemp文件夹必须提前创建好
+				output = new FileOutputStream("e:/filetemp/"+myFileFileName[i]);
+				//建议1kb大小的缓冲区
+				byte[] bs = new byte[1024];
+				//将上传过来的文件输出到output中
+				input = new FileInputStream(myFile[i]);
+				int length = 0;
+				while((length=input.read(bs)) >0) {
+					output.write(bs, 0, length);
+				}
+			}
+		} finally {
+			input.close();
+			output.close();
+		}
+		return SUCCESS;
+	}
+}
+
+//struts.xml
+<action name="uploadAction" class="com.UploadAction">
+	<result>/view/success.jsp</result>
+</action>
+```
+
+#### 例子2：获取文件的信息
+
+struts2预定义了3个文件上传相关的属性，让我们可以直接获取文件的相关信息，
+
+```java
+//假设前端表单中定义的input标签为名为xyz。
+<input type="file" name="xyz" />
+
+//则在action中可以直接定义下面三个属性
+private File myFile; //上传的文件本身
+private String myFileFileName; //上传文件的文件名称
+private String myFileContentType; //文件的类型
+
+//如果上传多个文件，则改为数组类型
+private File[] myFile;
+private String[] myFileFileName;
+private String[] myFileContentType;
+```
+
+#### 例子3：限制文件大小和类型
+
+我们可以通过设置fileUpload拦截器的参数来进行这方便的限制。因为defaultStack已经默认引用了fileUpload拦截器，因此我们需要像下面这样配置拦截器。fileUpload有三个参数可配置：
+
+* allowedTypes：指定允许上传的文件的类型，多种类型用逗号隔开。注意，这里配置的不是文件的扩展名，而是对应的contentType，如果不知道某种文件的contentType可以先上传一下试试，在后台打印出来。
+* maximumSize：指定允许上传的文件的最大字节数。单位是字节byte。
+* allowedExtensions：指定允许上传的文件的扩展名。多个扩展名有逗号隔开。
+
+如果上传的文件不满足以上的参数条件，就会跳转到input页面，所以一般会在input页面上使用`<s:fielderror />`打印错误信息。
+
+```xml
+//struts.xml
+<action name="uploadAction" class="com.UploadAction">
+<interceptor-ref name="fileUpload">
+	<!-- 只能上传word文件 -->
+	<param name="allowedTypes">application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document</param>
+	<param name="maximumSize">200*1024</param><!-- 最大200kb -->
+	<param name="allowedExtensions">doc,docx</param><!-- 指定允许上传的文件扩展名 -->
+</interceptor-ref>
+<interceptor-ref name="defaultStack" />
+	<result name="success">/view/success.jsp</result>
+	<result name="input">/view/fileupload.jsp</result>
+</action>
+```
+
+```jsp
+<!-- fileupload.jsp -->
+<body>
+<%@ taglib prefix="s" uri="/struts-tags"%>
+<s:fielderror />
+<form Action="../bb/uploadAction.action" method="post" enctype="multipart/form-data">
+	文件：<input type="file" name="myFile" /> <br>
+	文件：<input type="file" name="myFile" /> <br>
+	文件：<input type="file" name="myFile" /> <br>
+	文件：<input type="file" name="myFile" /> <br>
+	<input type="submit" value="提交" />
+</form>
+</body>
+```
+
+#### 例子4：上传大文件
+
+struts2默认支持的单个上传文件最大为2097152字节。这是在Struts2-core-2.1.8.1.jar文件中的`org\apache\Struts2`文件夹下的default.properties文件中定义的。我们可以在struts.xml文件中覆盖这个默认值。
+
+```xml
+<!--
+struts.xml
+单个上传文件最大为10MB=1024*1024*10 
+-->
+<constant name="struts.multipart.maxSize" value="10485760"></constant>
+```
+
+### 文件下载
+
+使用struts2来实现文件下载，会用到它的stream类型的result。
+
+* 文件下载的Action无需实现execute方法，只需要提供`public InputStream getInputStream()`方法即可。
+* 在struts.xml中配合result类型为stream，然后设置相关参数。
+
+result中可配置的参数如下，最常用的是 contentDisposition来制定默认的文件下载名，其他的使用默认即可。
+
+* contentType：下载文件的类型
+* contentLength：下载文件的长度，用于浏览器的进度条显示
+* tentDisposition：指定文件下载的默认名字，如果不指定则使用Action名.action
+* inputName：Action中用于返回InputStream的get方法的名字，默认为inputStream。因此用户的Action中定义了getInputStream方法。
+* bufferSize：缓冲区大小，默认为1KB
+* allowCaching：是否允许浏览器进行缓存。
+* contentCharSet：HTTP响应头信息中的编码格式。
+
+```java
+//Action
+public class DownloadAction extends ActionSupport{
+	
+	public InputStream getInputStream() throws Exception {
+		File file = new File("e:/filetemp/myfile.doc");
+		return new FileInputStream(file);
+	}
+}
+
+//struts.xml
+<action name="downloadAction" class="com.DownloadAction">
+	<result type="stream">
+		<param name="contentDisposition">attachment;filename="rename.doc"</param>
+	</result>
+</action>
+          
+//download.jsp
+<body>
+	<a href="../bb/downloadAction.action">文件下载</a>
+</body>
+```
+
+#### 重命名的三种方式
+
+**方法一：像上面一样通过在contentDisposition参数中写死**
+
+```xml
+<action name="downloadAction" class="com.DownloadAction">
+	<result type="stream">
+		<param name="contentDisposition">attachment;filename="rename.doc"</param>
+	</result>
+</action>
+```
+
+**方法二：在contentDisposition参数中通过OGNL表达式引用方法返回值**
+
+```java
+//在action中定义一个新方法，用于返回文件名
+public String getDownloadFileName() {
+	return "rename.doc";
+}
+
+//在struts.xml中引用这个方法，注意OGNL表达式的名称对应
+<action name="downloadAction" class="com.DownloadAction">
+	<result type="stream" >
+		<param name="contentDisposition">attachment;filename=${downloadFileName}</param>
+	</result>
+</action>
+```
+
+**方法三：直接定义一个getContentDisposition()方法，无需contentDisposition参数**
+
+```java
+//action
+public String getContentDisposition() {
+	return "attachment;filename=\"rename.doc\""; //转义字符""
+}
+
+//struts.xml，无需contentDisposition属性
+<action name="downloadAction" class="com.DownloadAction">
+	<result type="stream" >
+	</result>
+</action>
+```
+
+#### 中文文件名
+
+```java
+public String getContentDisposition() throws UnsupportedEncodingException {
+	String rename = new String("中文名".getBytes("UTF-8"), "ISO8859-1");
+	return "attachment;filename=\""+rename+".doc\""; //转义字符"";
+}
+```
+
+## 第15章 整合spring
+
+Spring解决了Action依赖于逻辑层的问题，如果不使用spring，我们只能在Action中显式地new创建Service层。如果使用了spring，则action不再依赖于service层的具体实现类，只需只有service的接口即可，spring会为我们管理action与service具体实现类的关系，并在合适的时候注入实现类对象。
+
+```java
+public String execute() throws Exception {
+	ServiceInterface service = new ServiceImpl(); //依赖于具体的服务层实现类，不好
+	String id = service.getUserId();
+	return SUCCESS;
+}
+```
+
+下面就开始把spring正和岛struts2中，为struts2提供依赖注入的功能。这里以spring2.5.6为例：
+
+**第一步：导入jar包**
+
+* spring-beans.jar
+* spring-context.jar
+* spring-core.jar
+* spring-test.jar
+* spring-web.jar
+* commons-logging-1.0.4.jar （在struts2中）
+* struts2-spring-plugin-2.1.8.jar （在struts2中）
+
+**第二步：编写Action、服务层接口、服务层实现类**
+
+```java
+//服务层接口
+public interface SampleService {
+	public String getNameById(String userId);
+}
+
+//服务层实现类
+public class SampleServiceImpl implements SampleService{
+	@Override
+	public String getNameById(String userId) {
+		String name = "hello,"+userId;
+		return name;
+	}
+}
+
+//action
+public class SampleAction extends ActionSupport{
+	private SampleService service;
+	private String name;
+	private String userId;
+	
+	//省略getter/setter
+	public SampleService getService() {
+		return service;
+	}
+
+	public void setService(SampleService service) {
+		this.service = service;
+	}
+	
+	public String execute() throws Exception {
+		name = this.service.getNameById(userId);
+		return SUCCESS;
+	}
+}
+
+//success.jsp
+<body>
+<%@ taglib prefix="s" uri="/struts-tags" %>
+欢迎你：<s:property value="name"/>
+</body>
+```
+
+**第三步：编写spring配置文件applicationContext.xml,放在src目录下**
+
+```xml
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+		xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+		xsi:schemaLocation="
+			http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-2.5.xsd">
+
+	<bean name="service" class="com.SampleServiceImpl" />
+	<bean name="sampleAction" class="com.SampleAction" scope="prototype" autowire="byName" />
+</beans>
+```
+
+**第四步：在web.xml中引入spring**
+
+```xml
+<?xml version="1.0" encoding="UTF-8"?>
+<web-app xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns="http://java.sun.com/xml/ns/javaee"
+	xsi:schemaLocation="http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/web-app_2_5.xsd"
+	id="WebApp_ID" version="2.5">
+  
+  <!-- 引入spring -->
+	<context-param>
+		<param-name>contextConfigLocation</param-name>
+		<param-value>classpath*:applicationContext.xml</param-value>
+	</context-param>
+	<listener>
+		<listener-class>org.springframework.web.context.ContextLoaderListener</listener-class>
+	</listener>
+
+	<filter>
+		<filter-name>struts2</filter-name>
+		<filter-class>org.apache.struts2.dispatcher.FilterDispatcher</filter-class>
+	</filter>
+	<filter-mapping>
+		<filter-name>struts2</filter-name>
+		<url-pattern>/*</url-pattern>
+	</filter-mapping>
+</web-app>
+```
+
+**第五步：修改struts.xml文件，让struts2通过spring来获取Action、Service对象**
+
+```xml
+<constant name="struts.objectFactory" value="spring" />
+
+<action name="sampleAction" class="sampleAction">
+	<result name="success">/view/success.jsp</result>
+</action>
+```
+
+## 第17章：防止重复提交
+
+防止重复提交表单只需两步：
+
+**第一步：配置 <s:token />标签**
+
+```jsp
+//login.jsp
+<form action="../bb/helloWorldAction.action" method="post">
+	<s:token />
+	账号：<input type="text" name="um.account" /> <br>
+	密码：<input type="password" name="um.password" /> <br>
+	<input type="submit" value="提交" />
+</form>
+```
+
+**第二步：配置tokenSession拦截器**
+
+```xml
+<!-- struts.xml -->
+<action name="helloWorldAction" class="com.HelloWorldAction">
+	<interceptor-ref name="tokenSession" />
+	<interceptor-ref name="defaultStack" />
+	<result name="toWelcome">/view/welcome.jsp</result>
+	<result name="other">/view/other.jsp</result>
+</action>
+```
+
 
 
 
