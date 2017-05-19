@@ -896,3 +896,296 @@ DOM2级事件规定的事件流包括三个阶段：
 * 事件捕获阶段
 * 处于目标阶段
 * 事件冒泡阶段
+
+## 事件注册
+
+事件注册也可以理解成：**为事件指定处理函数**。注册的方式有以下几种：
+
+### 方法1：通过HTML属性注册
+
+该方法缺点较多，不推荐使用。**该方式支持所有浏览器。**
+
+```javascript
+<div  onclick="showMessage()">你好中国</div>
+
+function showMessage() {
+    alert("show message");
+}
+```
+
+### 方法2：使用DOM0级事件注册
+
+这种方式是通过为元素的属性指定处理函数实现函数注册。事件会在事件的冒泡阶段被处理。**该方式支持所有浏览器。**
+
+```javascript
+<button id="myButton">我的按钮</button>
+
+var button = document.getElementById("myButton");
+button.onclick = function() {
+  	//button元素的执行环境作用域
+    alert("clicked");
+};
+
+button.onclick = null; //移除注册
+```
+
+### 方法3：使用DOM2级事件注册
+
+DOM2级事件定义了两个方法，用于注册和删除事件处理函数：addEventListener()和removeEventListener()。这两个函数的最后一参数是一个boolean值，如果是true，则表示在捕获阶段调用事件处理函数，如果是false，表示在冒泡阶段调用事件处理函数。
+
+注意，我们会把事件处理函数当做形参传入addEventListener()中，如果你需要在未来某一时刻调用removeEventListener()删除事件处理函数，那么你必须给时间处理函数一个指针，而不能使用匿名函数，这样才能显式地删除它。
+
+**该方式支持IE9+、其他浏览器**。
+
+```javascript
+var button = document.getElementById("myButton");
+var sayHi = function() {
+    alert("sayHi");
+}
+button.addEventListener("click", function() { //匿名函数
+    //这里是button环境的执行环境
+    alert(this.id);
+}, false);
+button.addEventListener("click", sayHi, false); //函数指针传递
+
+button.removeEventListener("click", sayHi, false); //删除事件处理函数
+```
+
+### 方法4：使用IE事件注册
+
+IE事件注册使用attachEvent()和detachEvent()，它采用事件冒泡的机制。该方式的原理和DOM2级事件注册的方式类似，但也存在如下两个区别：
+
+* 事件执行顺序与注册顺序相反，即后注册的事件会先执行。
+* 事件函数中的执行环境是全局环境，而非元素环境。所以函数中的this是window。
+
+**该方式的浏览器包括IE和Opera。**
+
+```javascript
+var button = document.getElementById("myButton");
+var sayHi = function() {
+    alert("sayHi");
+}
+button.attachEvent("onclick", function() {
+    //这里是全局环境
+    alert(this==window); //true
+});
+button.attachEvent("onclick", sayHi);
+button.detachEvent("onclick", sayHi); //移除注册函数
+```
+
+## 事件对象
+
+JS会自动传入一个event对象到事件处理函数的内部。我们可以通过event对象获取许多信息，并进行一些操作，IE浏览器和非IE浏览器在event对象的操作上有些许不同。
+
+### 获取事件类型
+
+```javascript
+<button id="myButton">我的按钮</button>
+
+var button = document.getElementById("myButton");
+button.onclick = function(){
+    alert(event.type); //click
+};
+```
+
+### 事件目标
+
+* target属性：事件的目标，即用户实际交互的元素
+* currentTarget属性：其事件处理程序当前正在处理事件的那个元素，即JS中实际处理处理事件的元素
+
+由于有冒泡机制的存在，用户实际交互的元素，并不一定就是该元素，也有可能是该元素的父元素。
+
+```javascript
+//情况1：用户交互的元素target=实际处理事件的元素currentTarget
+<body>
+    <button id="myButton">我的按钮</button>
+    <script src="js1.js"></script>
+</body>
+
+var button = document.getElementById("myButton");
+button.onclick = function(){
+    alert(event.currentTarget==this); //true
+    alert(event.target==this); //true
+    alert(event.target==event.currentTarget); //true
+};
+```
+
+```javascript
+//情况2：用户交互的元素target是button，而实际处理事件的元素currentTarget是body
+//操作：用户点击button，button无法处理该事件，因此冒泡到body元素，body具备处理能力
+<body>
+    <button id="myButton">我的按钮</button>
+    <script src="js1.js"></script>
+</body>
+
+document.body.onclick = function(){
+    alert(event.currentTarget==document.body); //true
+    alert(event.currentTarget==this); //true
+    alert(event.target==document.getElementById("myButton")); //true
+};
+```
+
+### 一个函数处理多个事件
+
+```javascript
+<button id="myButton">我的按钮</button>
+
+var button = document.getElementById("myButton");
+var handler = function(event) {
+    switch(event.type) {
+        case "click":
+            alert("Clicked");
+            break;
+        case "mouseover":
+            event.target.style.backgroundColor = "red";
+            break;
+        case "mouseout":
+            event.target.style.backgroundColor = "";
+            break;
+    }
+};
+button.onclick = handler;
+button.onmouseover = handler;
+button.onmouseout = handler;
+```
+
+### 阻止事件的默认行为
+
+```javascript
+<a id="myLink" href="http://www.baidu.com">阻止超链接的默认行为</a>
+
+var myLink = document.getElementById("myLink");
+myLink.onclick = function() {
+    alert("myLink");
+    //只有cancelable属性设置为true的事件，才可以使用preventDefault()函数
+    event.preventDefault(); //阻止默认行为
+};
+```
+
+### 阻止事件传播
+
+```javascript
+//包括阻止事件在冒泡机制或捕获机制中传播
+<body>
+    <button id="myButton">我的按钮</button>
+    <script src="js1.js"></script>
+</body>
+
+var button = document.getElementById("myButton");
+button.onclick = function() {
+    alert("button click");
+    event.stopPropagation(); //阻止事件传播，body.onclick就不会处理事件了
+};
+document.body.onclick = function() {
+    alert("body click");
+};
+```
+
+### 在IE中使用event对象
+
+在IE中使用event对象需要注意一下几点：
+
+（1）使用HTML属性注册时，event当做函数参数进行传递：
+
+```javascript
+<button id="myButton" onclick="showMe(event);">我的按钮</button>
+
+function showMe(event) {
+    alert(event.type); //click
+}
+```
+
+（2）使用DOM0注册时，event对象是window对象的属性，因此必须通过window对象来获取event。
+
+```javascript
+<button id="myButton">我的按钮</button>
+
+var button = document.getElementById("myButton");
+button.onclick = function() {
+    var event = window.event;
+    alert(event.type);
+};
+```
+
+（3）使用IE事件注册即可通过函数参数获取event，也可能通过window对象获取event。
+
+（4）IE中的event对象的特殊属性：
+
+* cancelBubble属性：boolean类型，默认为false，true表示取消事件冒泡，等价于DOM方式的stopPropagation()方法
+* returnValue属性：boolean类型，默认为true，false表示取消事件的默认行为，等价于DOM方式的preventDefault()方法
+
+
+* srcElement：用户交互的事件目标元素，等价于DOM中的target
+
+## 事件类型
+
+web浏览器中的事件类型非常中，下面只介绍那些常用的，其他的用到再查吧。
+
+### UI事件：load
+
+load事件常用于window对象或者body对象，此时效果几乎是一样的：即当页面完全加载后（包括所有图像、JavaScript文件、CSS文件等外部资源），就会触发load事件。
+
+```javascript
+window.addEventListener("load", function() { //匿名函数
+    alert("window loaded");
+}, false);
+
+document.body.onload = function(){
+  alert("body loaded");  
+};
+```
+
+## 焦点事件：
+
+* blur：在元素失去焦点时触发。该事件不会冒泡。
+* foucusout：效果等价于blur，但会冒泡。
+* focus：在元素获得焦点时触发。该事件不会冒泡。
+* focusin：效果等价于focus，但会冒泡。
+
+## 事件内存优化
+
+有两招：
+
+* 事件委托：把事件绑定在父节点元素上，这样可以减少事件函数的定义。
+* 尽快的移除事件函数
+
+**事件委托**
+
+```javascript
+<ul id="myLinks">
+	<li id="link1">link1</li>
+	<li id="link2">link2</li>
+	<li id="link3">link3</li>
+</ul>
+
+//传统做法，为每一个<li>都绑定一个onclick事件处理函数
+var link1 = document.getElementById("link1");
+var link2 = document.getElementById("link2");
+var link3 = document.getElementById("link3");
+link1.onclick = function() {
+    alert("link1");
+};
+link2.onclick = function() {
+    alert("link2");
+};
+link3.onclick = function() {
+    alert("link3");
+};
+
+//更优的做法，事件委托，把onclick事件绑定到父节点<ul>上，这样可以减少事件函数的定义。根据冒泡机制，如果<li>无法处理，则交由<ul>去处理。
+var myLinks = document.getElementById("myLinks");
+myLinks.onclick = function(event) {
+    var target = event.target;
+    switch(target.id) {
+        case "link1":
+            alert("link1");
+            break;
+        case "link2":
+            alert("link2");
+            break;
+        case "link3":
+            alert("link3");
+            break;
+    }
+};
+```
