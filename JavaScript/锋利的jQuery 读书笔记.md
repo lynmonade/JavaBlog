@@ -271,7 +271,7 @@ $("p").click(fun2 = function() {
 $("p").unbind("click", fun1);
 ```
 
-## 第6章 jQuery与Ajax的应用
+# 第6章 jQuery与Ajax的应用
 
 ## 传统的ajax
 

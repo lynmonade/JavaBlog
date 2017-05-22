@@ -356,8 +356,8 @@ static String toOctalString(int i)
 static String toHexString(int i)
 ```
 
-### 其他包装类：Byte,Short,Long,Float,Double
-其他类基本和Integer的套路是一样的，具体可查API：
+### 其他包装类
+Byte,Short,Long,Float,Double和Integer的套路是一样的，具体可查API：
 
 * 使用静态成员变量表示最大、最小值。
 * 一个以基本类型作为参数的构造函数，一个以String作为参数的构造函数

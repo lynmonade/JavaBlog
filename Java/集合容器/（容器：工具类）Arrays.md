@@ -73,8 +73,6 @@ public class Test2 {
 }
 ````
 
-
-
 ## 数组比较
 
 数组比较本质上来说是比较数组对应位置的每一个元素。通过调用每一个元素的equals()方法进行比较，如果是基本类型，则会封装为包装类再比较。具体来说，数组相等必须满足一下两个条件：
@@ -172,7 +170,6 @@ public class CompTypeComparator implements Comparator<CompType>{
 		System.out.println(Arrays.toString(a));
 	}
 }
-
 ```
 
 ```java
@@ -219,4 +216,3 @@ public class ArraySearching {
 	}
 }
 ```
-
