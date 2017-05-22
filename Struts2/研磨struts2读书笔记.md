@@ -7,14 +7,14 @@
 **web.xml**
 
 ```xml
-  <filter>
-  	<filter-name>struts2</filter-name>
-  	<filter-class>org.apache.struts2.dispatcher.ng.filter.StrutsPrepareAndExecuteFilter</filter-class>
-  </filter>
-  <filter-mapping>
-  	<filter-name>struts2</filter-name>
-  	<url-pattern>/*</url-pattern>
-  </filter-mapping>
+<filter>
+	<filter-name>struts2</filter-name>
+	<filter-class>org.apache.struts2.dispatcher.ng.filter.StrutsPrepareAndExecuteFilter</filter-class>
+</filter>
+<filter-mapping>
+	<filter-name>struts2</filter-name>
+	<url-pattern>/*</url-pattern>
+</filter-mapping>
 ```
 
 **struts.xml**
@@ -109,7 +109,7 @@ public class HelloWorldAction extends ActionSupport{
 
 **第一步：**在WebRoot下创建一个名为DTD的文件夹，然后把struts2-core-2.1.8.jar中的struts-2.0.dtd文件拷贝到DTD文件夹下。
 
-**第二步：**eclipse-->windows-->preferences-->XML Catalog-->User Specified Entries-->点击Add按钮。Location中选择刚才拷贝的文件，Key type选择Public ID。Key的值为`-//Apache Software Foundation//DTD Struts Configuration 2.0//EN`。
+**第二步：**eclipse-->windows-->preferences-->搜素XML Catalog-->User Specified Entries-->点击Add按钮。Location中选择刚才拷贝的文件，Key type选择Public ID。Key的值为`-//Apache Software Foundation//DTD Struts Configuration 2.0//EN`。
 
 ### 开发技巧：获得Action的全类名
 
