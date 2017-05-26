@@ -167,7 +167,7 @@ public void validate() {
 
 ```html
 <body>
-<%@ taglib prefix="s" uri="/struts-tags"%>
+  <%@ taglib prefix="s" uri="/struts-tags"%>
 <s:if test="hasFieldErrors()" >
 <s:iterator value="fieldErrors">
 	<font color=red><s:property value="value[0]"/></font><br>
@@ -814,7 +814,7 @@ public class HelloWorldAction extends ActionSupport{
 
 拦截器有如下优点：
 
-1. 简化actino的实现、功能更加单一、通用代码模块化、提高重用性
+1. 简化action的实现、功能更加单一、通用代码模块化、提高重用性
 2. 实现AOP
 
 ### 拦截器的原理
@@ -883,10 +883,10 @@ public class HelloWorldAction extends ActionSupport{
 action会按照如下顺序找到它引用的拦截器：
 
 1. 首先，要找到它自己有没有声明拦截器的引用，即<action>元素有没有<interceptor>子元素，如果有，则使用这些拦截器，否则继续寻找。
-2. 其次，找到这个<action>所在的包有没有声明默认的拦截器引用，即<package>元素的<default-interceptor=ref>子元素，如果有，则使用这些拦截器，否则继续寻找。
+2. 其次，找到这个<action>所在的包有没有声明默认的拦截器引用，即<package>元素的<default-interceptor-ref>子元素，如果有，则使用这些拦截器，否则继续寻找。
 3. 最后，递归寻找这个包的父包，看看有没有声明默认的拦截器引用，直到找到有拦截器引用为止。
 
-注意，这三个位置的定义是覆盖关系，也就是说，如果<action>中生命了拦截器引用，那么就以它为准，其他的定义就无效了。即<action>中的拦截器引用声明 会覆盖<package>里面的默认拦截器声明，以此类推。正因为如此，如果<action>引用自定义的拦截器，最好在后面显式的引用默认拦截器栈，这样自定义拦截器、默认拦截器栈都会被调用。
+注意，这三个位置的定义是覆盖关系，也就是说，如果<action>中声明了了拦截器引用，那么就以它为准，其他的定义就无效了。即<action>中的拦截器引用声明会覆盖<package>里面的默认拦截器声明，以此类推。正因为如此，如果<action>引用自定义的拦截器，最好在后面显式的引用默认拦截器栈，这样自定义拦截器、默认拦截器栈都会被调用。
 
 ```xml
 <action name="helloWorldAction" class="com.HelloWorldAction">
