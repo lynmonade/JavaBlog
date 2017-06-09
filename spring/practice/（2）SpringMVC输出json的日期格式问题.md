@@ -1,0 +1,1 @@
+[spring mvc4使用及json 日期转换解决方案](http://blog.csdn.net/zhanngle/article/details/24123659)
