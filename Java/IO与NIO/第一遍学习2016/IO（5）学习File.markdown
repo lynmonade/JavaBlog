@@ -20,13 +20,13 @@ File类用于表示一个文件或者文件夹。它内置的静态成员变量可以方便开发者获取与平台相
 
 在Windows中访问文件目录时，可以使用正斜杠，也可以使用反斜杠，甚至可以正反斜杠混用：
 
-```
+```java
 d:/developer
 d:\developer
 d:/developer\maven
 ```
 
-在Java中访问Windows的文件目录，可以使用一个正斜杠`\`，或者两个反斜杠`\\`作为分隔符。这是因为Java中`\`表示转义字符，因此必须使用`\\`表示"单个反斜杠字符"。
+在Java中访问Windows的文件目录，可以使用一个正斜杠`/`，或者两个反斜杠`\\`作为分隔符。这是因为Java中`\`表示转义字符，因此必须使用`\\`表示"单个反斜杠字符"。
 
 ```java
 File file = new File("d:/developer");
@@ -41,7 +41,7 @@ File file = new File("d:\\developer/maven");
 //pathSeparator是路径分隔符，Winndows的路径分隔符是;，即多个路径之间用;进行分隔。UNIX的路径分隔符是:
 static String pathSeparator
 static char pathSeparatorChar
-//separator是一个路径之中中的分隔符，Windows的分隔符是\，即parentFolder\childFolder。UNIX的分隔符是/
+//separator是一个路径之中中的分隔符，Windows的分隔符是反斜杠\，即parentFolder\childFolder。UNIX的分隔符是正斜杠/
 static String separator
 static char separatorChar
 ```
@@ -77,7 +77,7 @@ boolean mkdirs()
 
 
 ### 修改File
-```
+```java
 //删除file，如果file表示文件夹，则只有文件夹为空时才能删除
 boolean delete()
 
@@ -93,7 +93,7 @@ boolean renameTo(File dest)
 ```
 
 
-### 路径时相关
+### 路径相关
 ```java
 //获取当初构造File时传入的路径，可能是绝对路径，也可能是相对路径
 //File的构造函数需要接受一个abstractPath作为路径

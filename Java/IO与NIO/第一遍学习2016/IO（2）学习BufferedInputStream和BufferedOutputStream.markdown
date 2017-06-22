@@ -3,7 +3,7 @@
 BufferedInputStream是FilterInputStream的子类，它继承了FilterInputStream的工作模式，在内部维护了一个InputStream作为成员变量。
 
 ## 缓存机制
-BufferedInputStream内部维护了一个byte buf[]数组，默认大小为8M，作为缓存数组。在**“适当条件”**下，程序首先会从input stream中获取byte数据，并填充到buf[]中。客户端只需拷贝buf[]中的数据即可，而无需直接面对外部数据。由于buf[]存在于内存中，拷贝buf[]的数据非常快。如果直接从外部设备中获取数据，速度会慢一些。
+BufferedInputStream内部维护了一个byte buf[]数组，默认大小为8KB，作为缓存数组。在**“适当条件”**下，程序首先会从input stream中获取byte数据，并填充到buf[]中。客户端只需拷贝buf[]中的数据即可，而无需直接面对外部数据。由于buf[]存在于内存中，拷贝buf[]的数据非常快。如果直接从外部设备中获取数据，速度会慢一些。
 
 ![缓存执行流程](http://wx3.sinaimg.cn/mw690/0065Y1avgy1fcr9wp1552j30le0g8wfh.jpg)
 
