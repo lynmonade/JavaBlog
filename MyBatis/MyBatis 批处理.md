@@ -79,6 +79,10 @@ public class Client {
 }
 ```
 
+# 批量更新update
+
+
+
 # Reference
 
 [批量插入数据(基于Mybatis的实现-Oracle)](http://www.cnblogs.com/robinjava77/p/5530681.html)
