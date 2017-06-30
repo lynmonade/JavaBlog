@@ -93,7 +93,7 @@ values ('39CB371715354EADAFD971C1C1AF07C8', 4, '玉林供电局', to_date('03-01
 
 在com.model包下创建名为Dept的POJO类，并提供getter/setter方法：
 
-```
+```java
 public class Dept {
 	private String guid;
 	private int xgzt;

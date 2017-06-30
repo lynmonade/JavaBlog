@@ -240,11 +240,89 @@ DataInputStream、DataOutputStream
 
 如果节点流被处理流包裹着，那么怎样才算是正确的关闭方式呢？下面提供几种方式：
 
-- 如果你使用JDK7+，可以使用`try-with-resources`语法
 - 只需关闭最外层的处理流即可
-- 从外到内关闭
+- 如果你使用JDK7+，可以使用`try-with-resources`语法
 
-## 如何关闭多个节点流
+### 关闭最外层的处理流
+一般我们都会使用处理流包裹节点流。此时你只需要在finally中关闭最外层的处理流即可。我们必须在独立的finally中使用独立的try..catch来关闭流。
+
+```java
+public void fileCopy(String src, String dest) throws IOException {
+	FileInputStream fis = null; //Stream声明
+	BufferedInputStream bis = null;
+	FileOutputStream fos = null;
+	BufferedOutputStream bos = null;
+	File srcFile = new File(src);
+	File destFile = new File(dest);
+	if(!srcFile.exists()) {
+		throw new FileNotFoundException("源文件路径不合法");
+	}
+	if(!destFile.exists()) {
+		destFile.createNewFile(); 
+	}
+	try {
+		fis = new FileInputStream(srcFile); //Stream初始化
+		fos = new FileOutputStream(destFile);
+		int kb = 1024;
+		long fileLength = srcFile.length();
+		int bufferSize = (int)fileLength;
+		bis = new BufferedInputStream(fis, bufferSize);
+		bos = new BufferedOutputStream(fos, bufferSize);
+		byte[] b = new byte[bufferSize];
+		int readSize = 0;
+		while((readSize = bis.read(b))!=-1) {
+			bos.write(b);
+		}
+	} catch (Exception e) {
+		e.printStackTrace();
+	} finally { 
+		try { //每一个buffer单独关闭，并用单独的try..catch包裹起来
+			if(bis!=null) {
+				bis.close();
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		try {
+			if(bos!=null) {
+				bos.close();
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
+}
+```
+
+### JDK7+的语法糖
+JDK7提供了try-with-resources语法糖，它使得JDK可以自动地close相关资源，使得我们无需像上面那样显示地close资源。具体来说，资源的close方法调动顺序与它们的创建顺序相反。此外，finally块是在所声明的资源被关闭后才运行的。
+
+```java
+public void fileCopy(String src, String dest) throws IOException {
+	File srcFile = new File(src);
+	File destFile = new File(dest);
+	long fileLength = srcFile.length();
+	int bufferSize = (int)fileLength;
+	try( //在这初始化资源，JDK7就能帮你自动close
+			FileInputStream fis = new FileInputStream(srcFile); 
+			BufferedInputStream bis = new BufferedInputStream(fis, bufferSize);
+			FileOutputStream fos = new FileOutputStream(destFile);
+			BufferedOutputStream bos = new BufferedOutputStream(fos, bufferSize);
+			) {
+		byte[] b = new byte[bufferSize];
+		int readSize = 0;
+		while((readSize = bis.read(b))!=-1) {
+			bos.write(b);
+		}
+	} catch (Exception e) {
+		e.printStackTrace();
+	} finally { 
+		//no need to close stream here
+	}
+}
+```
+
+
 
 # 流的推荐写法
 

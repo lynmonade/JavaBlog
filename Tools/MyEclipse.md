@@ -66,7 +66,8 @@ jar cf0 rt_debug.jar *
 
 ## MyEclipse2015集成JRebel
 JRebel简直就是JavaWeb开发的神器！有了它，你修改.java文件就再也不需要重启tomcat了！
-环境：MyEclipse2015+JRebel6.4.3。
+
+环境：MyEclipse2015+JRebel6.4.3。（下面的方法同样适用于eclipse集成JRebel）
 
 **第一步：下载所需文件**
 [下载JRbel6.4.3](http://download.csdn.net/detail/u014229956/9883054)，里面包含JRebel6.4.3、破解JRebel所需的文件、以及myEclipse2015的JRebel插件。
@@ -138,6 +139,12 @@ JRebel简直就是JavaWeb开发的神器！有了它，你修改.java文件就�
 2017-06-28 16:28:00 JRebel:  #############################################################
 2017-06-28 16:28:00 JRebel:  
 ```
+
+**如果你用的是eclipse，则还需要做如下配置：**
+
+* 在eclipse的tomcat配置界面-->Overview-->Server Options：勾选Serve modules wihout publishing，Modules auto reload by default
+* Eclipse-->Help-->JRebel Configuration-->Advanced-->JRebel agent:选择JRebel 6 Agent 6.4.3
+* 在你把项目add到tomcat后，进入eclipse的tomcat配置界面-->Modules:确保你的项目的Auto Reload = Enabled
 
 **Reference**
 
