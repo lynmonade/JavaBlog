@@ -93,19 +93,44 @@ log4j.appender.2dailyfile.Threshold = ERROR
 log4j.appender.2dailyfile.layout = org.apache.log4j.PatternLayout
 log4j.appender.2dailyfile.layout.ConversionPattern = %-d{yyyy-MM-dd HH:mm:ss}  [ %t:%r ] - [ %p ]  %m%
 
+# to max file
 log4j.appender.2maxfile=org.apache.log4j.RollingFileAppender 
 log4j.appender.2maxfile.Threshold=ERROR 
 log4j.appender.2maxfile.File=logs/rolling.log 
 log4j.appender.2maxfile.Append=true 
-log4j.appender.2maxfile.MaxFileSize=1KB
+log4j.appender.2maxfile.MaxFileSize=3KB
 log4j.appender.2maxfile.MaxBackupIndex=1 
 log4j.appender.2maxfile.layout=org.apache.log4j.PatternLayout 
 log4j.appender.2maxfile.layout.ConversionPattern= %-d{yyyy-MM-dd HH:mm:ss}  [ %t:%r ] - [ %p ]  %m%
 ```
 
 # log4j接管tomcat日志
-[Tomcat6 使用log4j 记录日志](http://www.cnblogs.com/vaer/p/4320013.html)
-[Tomcat配置log4j生成日志文件](http://blog.csdn.net/u013853871/article/details/51517711)
+
+[Tomcat下使用Log4j 接管 catalina.out 日志文件生成方式：](http://blog.csdn.net/liuxiao723846/article/details/50880158)
+
+```java
+log4j.rootLogger = stdout, 2maxfile
+
+# ALL < DEBUG < INFO <WARN < ERROR < FATAL < OFF
+
+# to console
+log4j.appender.stdout = org.apache.log4j.ConsoleAppender
+log4j.appender.stdout.Target = System.out
+log4j.appender.2file.Threshold = INFO
+log4j.appender.stdout.layout = org.apache.log4j.PatternLayout
+log4j.appender.stdout.layout.ConversionPattern =  %d{ABSOLUTE} %5p %c{ 1 }:%L - %m%n
+
+log4j.appender.2maxfile=org.apache.log4j.RollingFileAppender 
+log4j.appender.2maxfile.Threshold=DEBUG 
+log4j.appender.2maxfile.File=${catalina.home}/logs/tomcat_log.log 
+log4j.appender.2maxfile.Append=true 
+log4j.appender.2maxfile.MaxFileSize=20KB
+log4j.appender.2maxfile.MaxBackupIndex=1 
+log4j.appender.2maxfile.layout=org.apache.log4j.PatternLayout 
+log4j.appender.2maxfile.layout.ConversionPattern= %-d{yyyy-MM-dd HH:mm:ss}  [ %t:%r ] - [ %p ]  %m%
+```
+
+
 
 
 
