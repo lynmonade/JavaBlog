@@ -3253,7 +3253,7 @@ INSERT INTO sys_user(username, password, realname, activity, sort) VALUES(&#39;�
 <a:Code>sys_role</a:Code>
 <a:CreationDate>1499415172</a:CreationDate>
 <a:Creator>chen_c</a:Creator>
-<a:ModificationDate>1499659122</a:ModificationDate>
+<a:ModificationDate>1499658882</a:ModificationDate>
 <a:Modifier>chen_c</a:Modifier>
 <a:Comment>角色表</a:Comment>
 <c:Columns>
@@ -3296,6 +3296,18 @@ INSERT INTO sys_user(username, password, realname, activity, sort) VALUES(&#39;�
 <a:Length>100</a:Length>
 </o:Column>
 <o:Column Id="o51">
+<a:ObjectID>7CE06DEC-A4CC-489E-BFBA-11FA751D0E1F</a:ObjectID>
+<a:Name>修改时间</a:Name>
+<a:Code>modifytime</a:Code>
+<a:CreationDate>1499415403</a:CreationDate>
+<a:Creator>chen_c</a:Creator>
+<a:ModificationDate>1499415403</a:ModificationDate>
+<a:Modifier>chen_c</a:Modifier>
+<a:Comment>修改时间</a:Comment>
+<a:DefaultValue>SYSDATE</a:DefaultValue>
+<a:DataType>DATE</a:DataType>
+</o:Column>
+<o:Column Id="o52">
 <a:ObjectID>AFC189E5-7A9E-4E8F-B812-05C6936109A5</a:ObjectID>
 <a:Name>排序</a:Name>
 <a:Code>sort</a:Code>
@@ -3307,18 +3319,6 @@ INSERT INTO sys_user(username, password, realname, activity, sort) VALUES(&#39;�
 <a:DefaultValue>SYSDATE</a:DefaultValue>
 <a:DataType>NUMBER(18)</a:DataType>
 <a:Length>18</a:Length>
-</o:Column>
-<o:Column Id="o52">
-<a:ObjectID>7CE06DEC-A4CC-489E-BFBA-11FA751D0E1F</a:ObjectID>
-<a:Name>修改时间</a:Name>
-<a:Code>modifytime</a:Code>
-<a:CreationDate>1499415403</a:CreationDate>
-<a:Creator>chen_c</a:Creator>
-<a:ModificationDate>1499415403</a:ModificationDate>
-<a:Modifier>chen_c</a:Modifier>
-<a:Comment>修改时间</a:Comment>
-<a:DefaultValue>SYSDATE</a:DefaultValue>
-<a:DataType>DATE</a:DataType>
 </o:Column>
 </c:Columns>
 <c:Keys>
@@ -3357,7 +3357,7 @@ INSERT INTO sys_user(username, password, realname, activity, sort) VALUES(&#39;�
 <a:Code>sys_userrole</a:Code>
 <a:CreationDate>1499415854</a:CreationDate>
 <a:Creator>chen_c</a:Creator>
-<a:ModificationDate>1499659145</a:ModificationDate>
+<a:ModificationDate>1499657982</a:ModificationDate>
 <a:Modifier>chen_c</a:Modifier>
 <a:Comment>用户角色表</a:Comment>
 <c:Columns>
@@ -3367,9 +3367,8 @@ INSERT INTO sys_user(username, password, realname, activity, sort) VALUES(&#39;�
 <a:Code>guid</a:Code>
 <a:CreationDate>1499415998</a:CreationDate>
 <a:Creator>chen_c</a:Creator>
-<a:ModificationDate>1499659134</a:ModificationDate>
+<a:ModificationDate>1499416051</a:ModificationDate>
 <a:Modifier>chen_c</a:Modifier>
-<a:DefaultValue>SYS_GUID()</a:DefaultValue>
 <a:DataType>VARCHAR2(50)</a:DataType>
 <a:Length>50</a:Length>
 <a:Mandatory>1</a:Mandatory>
@@ -3397,17 +3396,6 @@ INSERT INTO sys_user(username, password, realname, activity, sort) VALUES(&#39;�
 <a:Length>50</a:Length>
 </o:Column>
 <o:Column Id="o58">
-<a:ObjectID>82FFB597-ED64-407D-A61C-F1805EE03E53</a:ObjectID>
-<a:Name>修改时间</a:Name>
-<a:Code>modifytime</a:Code>
-<a:CreationDate>1499415998</a:CreationDate>
-<a:Creator>chen_c</a:Creator>
-<a:ModificationDate>1499659144</a:ModificationDate>
-<a:Modifier>chen_c</a:Modifier>
-<a:DefaultValue>SYSDATE</a:DefaultValue>
-<a:DataType>DATE</a:DataType>
-</o:Column>
-<o:Column Id="o59">
 <a:ObjectID>97829A07-CDE9-4CE7-A4CE-66CAEE64E289</a:ObjectID>
 <a:Name>排序</a:Name>
 <a:Code>sort</a:Code>
@@ -3417,6 +3405,16 @@ INSERT INTO sys_user(username, password, realname, activity, sort) VALUES(&#39;�
 <a:Modifier>chen_c</a:Modifier>
 <a:DataType>NUMBER(18)</a:DataType>
 <a:Length>18</a:Length>
+</o:Column>
+<o:Column Id="o59">
+<a:ObjectID>82FFB597-ED64-407D-A61C-F1805EE03E53</a:ObjectID>
+<a:Name>修改时间</a:Name>
+<a:Code>modifytime</a:Code>
+<a:CreationDate>1499415998</a:CreationDate>
+<a:Creator>chen_c</a:Creator>
+<a:ModificationDate>1499415998</a:ModificationDate>
+<a:Modifier>chen_c</a:Modifier>
+<a:DataType>DATE</a:DataType>
 </o:Column>
 </c:Columns>
 <c:Keys>
