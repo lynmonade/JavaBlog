@@ -210,4 +210,4 @@ log4j.appender.2dailyfile.layout.ConversionPattern = %-d{yyyy-MM-dd HH:mm:ss}  [
 * [log4j为不同的level设置不同的输出](http://smartvessel.iteye.com/blog/743220)
 * [log4j配置文件位置详解](http://blog.csdn.net/lifuxiangcaohui/article/details/11042375)
 * [log4j使用介绍](http://swiftlet.net/archives/683)
-* ​
+* [记录异常日志的7条规则](http://www.importnew.com/518.html)​
