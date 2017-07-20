@@ -3,10 +3,12 @@
 ## PD使用规范
 * 表名所有字母大写
 * 字段名采用与变量命名相同的驼峰命名法，方便使用代码生成器生成java bean
+* 编写insert脚本时，表名所有字母大写，采用与变量命名相同的驼峰命名法，并用双引号包裹，否则PL不认
 * PD导出的sql使用mix模式，即保持大小写字母不变，并采用UTF-8，防止.sql文件中文乱码
 * 大量的insert语句应写在proc里面，而不是script里面，防止执行脚本时卡死
+* 编写proc时，在最后加上begin test_procedure; end;，这样才可以在sql window执行proc
+* 在PL中执行.sql脚本时，如果中文字段值、注释出现乱码，则可在系统环境变量中加入NLS_LANG=AMERICAN_AMERICA.utf8（前提是你的oracle也是设置为utf-8）
 * 你无法手工调整.sql脚本中的table顺序，因为顺序是依赖与表之间的关系。但如果你的insert、update脚本是写死id的话，这也不会是问题
-* 
 
 ## 新建PD项目
 file-->new-->Physical Data Model-->DBMS选择对应的数据库类型-->First Diagram:Physical Diagram
