@@ -5,28 +5,39 @@
 ```
 1.创建MAVEN_HOME
 变量=MAVEN_HOME
-值=D:\workspace_maven\maven_3.0.3\apache-maven-3.0.3
+值=D:\developer\software\maven\apache-maven-3.3.9
 
 2.配置path：在path的值后面添加
 %MAVEN_HOME%\bin;
 ```
 
 ## Maven的基本知识
+### 修改jar包保存的位置
 Maven可以帮助我们从互联网上的Maven中央库中下载项目所依赖的jar包。你只需要编写pom.xml文件，Maven便会根据pom.xml文件下载必要的jar包。Maven下载的jar包默认保存在C:\Users\用户名\.m2\目录中。如果想要修改jar包保存的位置，可以修改`%MAVEN_HOME%\conf\settinng.xml`的文件。该文件是Maven的全局配置文件：
 
-```
+```xml
 //修改jar包的保存位置：
 <localRepository>D:\workspace_maven\maven_jar</localRepository>
 ```
 
 此外，我们还可以把setting.xml文件拷贝到`在C:\Users\用户名\.m2\`目录下，这样setting.xml文件就会变为该计算机用户的配置文件，只对该用户有效果。而`%MAVEN_HOME%\conf\settinng.xml`则是全局的配置文件。
 
-## Maven集成MyEclipse
-在MyEclipse中，建议使用自己下载的Maven，而不是MyEclipse自带的Maven。
+## 在eclipse中部署maven项目
+eclipse4x自带了maven插件，因此无需额外安装maven插件，只需要配置一下maven插件，让其指向你本地的maven即可。
 
-**第一步：**Window--Preferences--MyEclipse--Maven4MyEclipse--Installations，点击add按钮，把我们下载的%MAVEN_HOME%地址配置进去。
+**第一步：配置maven**
 
-**第二步：**Window--Preferences--MyEclipse--Maven4MyEclipse--User Settings，配置Global Settings和User Settings，即上面提到的全局配置文件和当前用户的配置文件。最后记得点击**Update Settings按钮**和**Reindex按钮**。
+Window--Preferences-Maven--Installations-->Add:选择你安装的maven。
+
+**第二步：克隆并导入maven项目**
+
+在github中clone整个maven项目到你的eclipse工作空间下，接着打开eclipse-->File-->Import-->Maven-->Existing Maven Projects-->选中你想导入的maven项目-->finish，稍等片刻直至右下角的导入完成。
+
+**第三步：把maven项目转为java web项目**
+
+
+
+
 
 ## 如何用Maven部署github上的项目
 按照上面的步骤，你就可以把Maven配置完成了。接着你可以在cmd中，使用`mvn version`查看Maven版本。
