@@ -16,6 +16,28 @@ List<String> words = Lists.toList("hello", "world");
 # chapter 2
 ## 2.1 Subtyping and the Substitution Principle 
 
+> Integer is a subtype of Number
+>
+> Double is a subtype of Number
+>
+> ArrayList<E> is a subtype of List<E>
+>
+> List<E> is a subtype of Collection<E>
+>
+> Collection<E> is a subtype of Iterable<E>
+>
+> List<Integer> is a subtype of Collection<? extends Number>
+>
+> Integer[] is a subtype of Number[]
+
+
+
+> List<Integer> is not a subtype of Collection<Number>
+>
+> 
+
+
+
 Substitution Principle
 
 ```java
@@ -56,7 +78,6 @@ List<? extends String> list16 = new ArrayList<String>(); //编译通过。但严
 //compile-time error
 //List<Number> list01 = new ArrayList<Integer>();
 //List<Number> list02 = new ArrayList<? extends Number>(); //? can't use with new  
-
 ```
 
 ## 2.2 Wildcards with extends
