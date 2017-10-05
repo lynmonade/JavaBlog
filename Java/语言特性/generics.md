@@ -243,11 +243,12 @@ List<List<?>> = Lists.<List<?>>factory(); // ok。通配符在第二层参数，
 ```
 
 
-## keywords
+## keywords关键字翻译
 
 * subtyping：子类化
 * wildcards：通配符，即泛型中的?
-* Type Parameters：类型参数，也就是T,E这些占位参数
+* Type Parameter：在接口、类的签名中定义泛型参数T、E
+* Type Variable：在泛型方法签名中定义泛型参数T、E
 * arbitrary：随意的，任性的，武断的
 
 
