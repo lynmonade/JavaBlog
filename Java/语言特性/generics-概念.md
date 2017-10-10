@@ -65,8 +65,22 @@ public MyClass {
 
 > An instantiation of a generic type where all type arguments are concrete types rather than wildcards.
 > Examples of concrete parameterized types are List<String> , Map<String,Date> , but not List<? extends Number> or Map<String,?>.
+>
+> 在对generic type进行实例化时，不带wildcards的实例化就是concrete parameterized type。
 
+## raw type
 
+> The generic type without any type arguments.
+
+## wildcard parameterized type
+
+> An instantiation of a generic type where the type argument is a wildcard (as opposed to a concrete type).
+> A wildcard parameterized type is an instantiation of a generic type where at least one type argument is a wildcard.  Examples of wildcard parameterized types are Collection<?> , List<? extends Number> , Comparator<? super String> and Pair<String,?> . A wildcard parameterized type denotes a family of types comprising concrete instantiations of a generic type.  The kind of the wildcard being used determines which concrete parameterized types belong to the family.  For instance, the wildcard parameterized type Collection<?> denotes the family of all instantiations of the Collection interface regardless of the type argument.  The wildcard parameterized type List<? extends Number> denotes the family of all list types where the element type is a subtype of  Number .  The wildcard parameterized type Comparator<? super String> is the family of all instantiations of the Comparator interface for type argument types that are supertypes of String . 
+> A wildcard parameterized type is not a concrete type that could appear in a new expression.  A wildcard parameterized type is similar to an interface type in the sense that reference variables of a wildcard parameterized type can be declared, but no objects of the wildcard parameterized type can be created.  The reference variables of a wildcard parameterized type can refer to an object that is of a type that belongs to the family of types that the wildcard parameterized type denotes. 
+
+## unbounded wildcard parameterized type
+
+> An instantiation of a generic type where all type arguments are the unbounded wildcard " ? ". The unbounded wildcard parameterized type is kind of the supertype of all other instantiations of the generic type: "subtypes" can be assigned to the "unbounded supertype", not vice versa.
 
 # How do I define a generic type? 
 
@@ -140,6 +154,20 @@ We are prepared to cope with `ClassCastException` s when there is a cast express
 > * in exception handling
 > * in a class literal
 > * in an instanceof expression
+
+# How can I work around the restriction that there are no arrays whose component type is a concrete parameterized type?
+
+> You can use arrays of raw types, arrays of unbounded wildcard parameterized types, or collections of concrete parameteriezd types as a workaround.简单来说，只有reifiable type才能作为数组类型，List<?>是reifiable type，而Pair<String, String>不是reifiable type
+>
+> 最有效的解决办法是，不要使用arrays of concrete parameterized type , arrays of raw types, arrays of unbounded wildcard parameterized type，推荐使用泛型集合。
+
+# Why are raw types permitted?
+
+> To facilitate interfacing with non-generic (legacy) code.兼容JDK1.5之前没有泛型的旧代码。
+
+# What is the difference between the unbounded wildcard parameterized type and the raw type?
+
+
 
 # Reference
 
