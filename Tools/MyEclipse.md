@@ -34,7 +34,7 @@ Sun对rt.jar中的类进行编译时去除了调试信息，因此在eclipse中�
 
 **第二步：**在%JDK_HOME%下找到src.zip压缩包，这就是oracle提供的jdk源码。把src.zip解压到jdk_src目录下。编译时，我们只需要留下java、javax、org三个文件夹就够了，所以其他的文件夹删掉即可。
 
-**第三步：**把整个%JDK_HOME%\jre\lib文件夹复制到D:\myJDK\目录下。这样可以减少在命令行中输入文件名。
+**第三步：**在myJDK下创建一个文件夹名为lib，把整个%JDK_HOME%\jre\lib文件夹复制到D:\myJDK\lib目录下。这样可以减少在命令行中输入文件名。
 
 **第四步：**打开cmd控制台，进入cd到D:\myJDK目录，执行下面这条语句，这时会在myJDK目录下创建一个filelist.txt文件，里面列出了所有的jdk_src下所有的.java文件的完整路径。
 
@@ -56,7 +56,7 @@ jar cf0 rt_debug.jar *
 
 **第七步：**把rt_debug.jar文件拷贝到%JDK_HOME%\jre\lib\endorsed目录下，如果没有endorsed目录，就自己创建一个。
 
-**第八步：**打开eclipse，进入Window--Preferences--Java--Installed JREs，eclipse默认使用的是JRE，JRE是不具备断点调试功能的，需要换成JDK，因此点击Add按钮--Next(Stanard VM)--Directory定位到%JDK_HOME%，记得点击Finish。最后记得勾选刚才我们新添加的JDK。
+**第八步：**打开eclipse，进入Window--Preferences--Java--Installed JREs，eclipse默认使用的是JRE，JRE是不具备断点调试功能的，需要换成JDK，因此点击Add按钮--Next(Stanard VM)--Directory定位到%JDK_HOME%。然后选择Add External JARs，把刚才创建的rt_debug.jar添加进去。(建议对JRE home进行重命名，比如jdk1.6.0_27_debug)
 
 **第九步：**新建一个Java Project，设置JRE时，记得选择我们新建的JDK，而不是使用默认设置。这样，你就可以在该项目中尽情的设置断点了！
 
