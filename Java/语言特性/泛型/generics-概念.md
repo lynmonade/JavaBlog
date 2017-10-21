@@ -3,8 +3,8 @@
 ##  generic type
 
 > A generic type is a type with formal type parameter.
->
-> 下面的例子中，Collection<E>和MyClass<T,S>就是generic type。
+
+下面的例子中，Collection<E>和MyClass<T,S>就是generic type。
 
 ```java
 interface Collection<E> {
@@ -19,6 +19,7 @@ public class MyClass<T,S> {
 ```
 
 ## type parameter
+
 
 > generic type has one or more type parameters.
 >
