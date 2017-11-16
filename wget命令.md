@@ -1,1 +1,0 @@
-wget -r -p -np -k D:\workspace\offline\miniui  http://www.miniui.com/
