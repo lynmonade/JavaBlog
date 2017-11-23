@@ -6,9 +6,15 @@
 
 Exception有一个子类叫做RuntimeException，他属于**不受检查的异常**，而Exception的其他子类在编译时被强制检查的异常称为**受检查的异常**。
 
+## 20171121笔记
+
+如果对异常进行try-catch，比如字符集的异常（该异常JDK要求必须捕获或者抛出）。如果对异常try-catch，则catch后的代码依然会执行。严格来说，遇到异常后，无论异常是被try包围，还是直接抛出来的，程序逻辑都会跳到最近的catch处。如果没有catch，则程序也不往下走了，控制台输出错误信息。
+
+
+
 ## RuntimeException
 
-RunTimeException属于编程错误，会被Java虚拟机自动抛出，异常会直达至main方法，，因此**开发人员无需显式地抛出、捕获RuntimeException**，Java虚拟机都帮你完成了。而Exception的其他异常子类，开发人员必须显式地抛出、捕获。
+RunTimeException属于编程错误，会被Java虚拟机自动抛出，异常会直达至main方法，因此**开发人员无需显式地抛出、捕获RuntimeException**，Java虚拟机都帮你完成了。而Exception的其他异常子类，开发人员必须显式地抛出、捕获。
 
 但在实际开发中，我们还是经常显式地抛出RuntimeException，这么做的目的在于提供更加精确的异常信息，便于方法使用者进行错误排查，比如JFinal的源码就是这么做的：
 
