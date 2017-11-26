@@ -103,7 +103,7 @@ connect: {
 this.base_uri = this.config.base_uri || this.prefs.get("app-base_uri") || "http://localhost:9200";
 ```
 
-修改为：
+修改为：(192.168.2.103是你运行ES那台机的IP，这里我是搭建在自己的笔记本上)
 
 ```shell
 this.base_uri = this.config.base_uri || this.prefs.get("app-base_uri") || "http://192.168.2.103:9200";
