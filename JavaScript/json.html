@@ -1,0 +1,25 @@
+<html>
+	
+</html>
+<script type="text/javascript">
+var book = {
+	title:"professional javascript",
+	author:["nicholas c", "roger federer"],
+	edition:3,
+	year:2011
+};
+
+//JSON.stringify()：把JS对象序列化为JSON字符串
+var jsonText = JSON.stringify(book);
+console.log(jsonText);
+
+//JSON.parse()：把JSON字符串反序列化为JS对象
+var bookCopy = JSON.parse(jsonText);
+console.log(bookCopy);
+
+
+var url1 = "http://172.16.8.140:8080/jhb/id=abc&def#ghi@jkl";
+console.log("encodeURI(url1)="encodeURI(url1));
+
+
+</script>
