@@ -48,7 +48,7 @@ dir /B /S /X jdk_src\*.java > filelist.txt
 javac -J-Xms16m -J-Xmx1024m -sourcepath D:\myJDK\jdk_src -cp D:\myJDK\lib\rt.jar -d D:\myJDK\jdk_debug -g @filelist.txt >> log.txt 2>&1
 ```
 
-**第六步：**cd到jdk_debug目录下，执行下面的命令，这回在jdk_debug目录下创建一个rt_debug.jar文件。
+**第六步：**cd到jdk_debug目录下，执行下面的命令，会在jdk_debug目录下创建一个rt_debug.jar文件。
 
 ```java
 jar cf0 rt_debug.jar *
