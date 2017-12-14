@@ -1,0 +1,18 @@
+# chapter2
+
+（1）读取bean的xml配置文件：
+
+```java
+//接口：
+ResourceLoader:类似于FileUtil工具类，可以返回一个文件地址所对应的Resource
+Resource：类似于File类，对一个文件的String地址进行封装
+BeanDefinitionReader：持有ResourceLoader
+EnvironmentCapable：
+BeanDefinitionDocumentReader
+BeanDefinitionParserDelegate
+```
+
+1. 通过继承自AbstractBeanDefinitionReader中的方法，来使用ResouceLoader讲资源文件路径转换为对应的Resource文件。
+2. 通过DocumentLoader对Resource文件进行转换，将Resource文件转换为Document文件。
+3. 通过实现接口BeanDefinitionDocumentReader的DefaultBeanDefinitionDocumentReader类对Document进行解析，病使用BeanDefinitionParserDeleagate对Element进行解析。
+
