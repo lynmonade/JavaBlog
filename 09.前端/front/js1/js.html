@@ -1,0 +1,102 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>js</title>
+</head>
+<body>
+
+</body>
+</html>
+<script type="text/javascript">
+	//stringify(),把JS对象序列化为JSON字符串
+	//其中，book对象的函数会被忽略，undefine的属性会被忽略
+	var book = {
+		title:"js book of professional",
+		authors:["roger","lyn","ted"],
+		edition:3,
+		year:2011,
+		isPublish:true
+	};
+	var jsonText = JSON.stringify(book);
+	console.log(jsonText);
+	
+	//stringify()的第二个参数是个过滤器:
+	//1. 如果过滤器是数组，这时只会序列化过滤器中的字段
+	var jsonTextFilter1 = JSON.stringify(book,["title", "authors"]);
+	console.log("jsonTextFilter1="+jsonTextFilter1);
+	
+	//2. 如果过滤器是函数，则有会改变value值。
+	var jsonTextFilter2 = JSON.stringify(book, function(key,value) {
+		switch(key) {
+			case "authors":
+				return value.join(",");
+			case "year":
+				return 5000;
+			case "edition":
+				return undefined; //undefined的key-value将会被忽略
+			default:
+				return value;
+		}
+		
+	});
+	console.log("jsonTextFilter2="+jsonTextFilter2);
+	
+	//stringify()的第三个参数表示缩进符,默认没有缩进
+	//如果是数字，则范围是[1,10]，表示缩进空格数
+	//如果是字符串，则表示用这个字符串进行缩进，字符串长度不能超过10
+	var jsonTextFormat1 = JSON.stringify(book, null, 4); //缩进4个空格
+	console.log(jsonTextFormat1);
+	
+	var jsonTextFormat2 = JSON.stringify(book, null, "**"); //使用两个*号进行缩进
+	console.log(jsonTextFormat2);
+	
+	
+	//toJSON()方法
+	//如果一个JS对象拥有toJSON()方法，则对JS对象序列化时，会优先且只调用toJSON()方法作为序列化的结果。
+	//如果JS对象没有toJSON()方法，则在调用stringify()时，会按照默认方式进行序列化。
+	var person = {
+		name:{
+			firstName:"roger",
+			lastName:"federer",
+			midName:"lyn"
+		},
+		address:"kings road",
+		age:15,
+		telphone:"133999",
+		toJSON: function() {
+			return this.address;
+		}
+	};
+	var jsonTextToJsonAndFilter = JSON.stringify(person,["name","age","telephone"],4);
+	console.log(jsonTextToJsonAndFilter);
+	
+	
+	//parse(),把JSON字符串反序列化为JSON对象
+	//反序列化属于深拷贝，book和bookDeepCopy是两个独立的对象
+	var bookDeepCopy = JSON.parse(jsonText);
+	
+	//我们也可以给parse()函数添加过滤器函数，实现反序列化时的个性化设置
+	var movie = {
+		movieName:"spider man",
+		actor:["tom","jim","sam"],
+		year:2011,
+		releaseDate:new Date(2011,12,20)
+		
+	};
+	
+	var movieJsonText = JSON.stringify(movie);
+	console.log("movieJsonText="+movieJsonText);
+	var movieCopy = JSON.parse(movieJsonText, function(key, value){
+		if(key=="releaseDate") {
+			return new Date(value);
+		}
+		else if(key=="year") { //undefined的pair将会被忽略
+			return undefined;
+		}
+		else {
+			return value;
+		}
+	});
+	console.log("movieCopy="+movieCopy);
+</script>
